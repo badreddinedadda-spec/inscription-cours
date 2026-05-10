@@ -561,17 +561,15 @@
             </select>
           </div>
           <div class="prog-opts">
-            <th:block th:each="c : ${coursList}">
+            <div th:each="c : ${coursList}" style="display:contents">
               <input type="radio" class="prog-r" name="coursId"
                      th:id="'p' + ${c.id}" th:value="${c.id}" required/>
               <label th:for="'p' + ${c.id}">
                 <span class="pname" th:text="${c.titre}">Programme</span>
                 <span class="pdur" th:text="${c.duree} + 'h'">120h</span>
               </label>
-            </th:block>
+            </div>
           </div>
-        </div>
-
         <div class="m-section">
           <div class="m-label">Message (optionnel)</div>
           <div class="field">
