@@ -381,6 +381,9 @@
       document.getElementById('notifDropdown').classList.remove('open');
     }
   });
+  window.openModal = function() { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+  window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; }
+  window.submitForm = function() { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
 </script>
 </body>
 </html>
