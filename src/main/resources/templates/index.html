@@ -164,6 +164,11 @@
     .flash-ok  { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; padding: 0.65rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.83rem; }
     .flash-err { background: #FFF5F5; border: 1px solid #FECACA; color: #991B1B; padding: 0.65rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.83rem; }
   </style>
+  <script>
+    window.openModal = function() { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; document.getElementById('successBlock').classList.remove('show'); document.getElementById('formBlock').style.display=''; document.getElementById('modalFoot').style.display=''; }
+    window.submitForm = function() { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
+  </script>
 </head>
 <body>
 
@@ -381,9 +386,7 @@
       document.getElementById('notifDropdown').classList.remove('open');
     }
   });
-  window.openModal = function() { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-  window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; }
-  window.submitForm = function() { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
+
 </script>
 </body>
 </html>
