@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Inscriptions — EduManager</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <style>
+    .tabs { display:flex; gap:0.4rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .tab { padding:0.45rem 1rem; border-radius:var(--radius); text-decoration:none; font-size:0.83rem; font-weight:500; border:1px solid var(--border); color:var(--muted); transition:all 0.15s; }
+    .tab:hover { border-color:var(--accent); color:var(--accent); }
+    .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .tab .count { display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.25); width:18px; height:18px; border-radius:50%; font-size:0.68rem; font-weight:700; margin-left:0.35rem; }
+    .tab.pending .count { background:rgba(146,64,14,0.15); color:#92400E; }
+    .detail-cell { font-size:0.76rem; color:var(--muted); line-height:1.6; }
+    .detail-cell strong { color:var(--text); font-weight:500; }
+  </style>
+</head>
+<body>
+<nav>
+  <a th:href="@{/dashboard}" class="brand">EduManager</a>
+  <a th:href="@{/etudiants}" sec:authorize="hasRole('ADMIN')">Étudiants</a>
+  <a th:href="@{/cours}">Cours</a>
+  <a th:href="@{/inscriptions}" class="active">Inscriptions</a>
+  <span style="margin-left:auto;color:var(--muted);font-size:0.83rem;" sec:authentication="name"></span>
+  <form th:action="@{/logout}" method="post" style="margin:0;">
+    <button type="submit" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.85rem;border-radius:var(--radius);cursor:pointer;font-size:0.82rem;font-family:inherit;">Déconnexion</button>
+  </form>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Inscriptions</h1>
+    <div style="display:flex;gap:0.65rem;">
+      <a 
+      <a th:href="@{/inscriptions/nouveau}" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">+ Nouvelle inscription</a>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <div class="tabs">
+    <a th:href="@{/inscriptions}" class="tab" th:classappend="${filterLabel == null} ? ' active' : ''">
+      Toutes <span class="count" th:text="${#lists.size(inscriptions)}">0</span>
+    </a>
+    <a th:href="@{/inscriptions/en-attente}" class="tab pending" th:classappend="${filterLabel != null} ? ' active' : ''">
+      En attente <span class="count" th:text="${#lists.size(enAttente != null ? enAttente : inscriptions)}">0</span>
+    </a>
+  </div>
+
+  <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+  <div class="alert alert-error"   th:if="${error}"   th:text="${error}"></div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Étudiant</th><th>Contact</th><th>Cours</th>
+          <th>Détails</th><th>Date</th><th>Statut</th>
+          <th sec:authorize="hasRole('ADMIN')">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${#lists.isEmpty(inscriptions)}">
+          <td colspan="8"><div class="empty-state"><div class="icon">📝</div><div>Aucune inscription.</div></div></td>
+        </tr>
+        <tr th:each="i : ${inscriptions}">
+          <td style="color:var(--muted);font-size:0.8rem;" th:text="${i.id}"></td>
+          <td>
+            <div style="font-weight:600;" th:text="${(i.etudiant.civilite != null ? i.etudiant.civilite + ' ' : '') + i.etudiant.prenom + ' ' + i.etudiant.nom}"></div>
+            <div class="detail-cell" th:text="${i.etudiant.email}"></div>
+          </td>
+          <td class="detail-cell">
+            <div th:if="${i.etudiant.telephone != null}">📞 <span th:text="${i.etudiant.telephone}"></span></div>
+            <div th:if="${i.etudiant.whatsapp  != null}">💬 <span th:text="${i.etudiant.whatsapp}"></span></div>
+            <div th:if="${i.etudiant.ville     != null}" th:text="${i.etudiant.ville + (i.etudiant.pays != null ? ', ' + i.etudiant.pays : '')}"></div>
+          </td>
+          <td>
+            <div style="font-weight:600;" th:text="${i.cours.titre}"></div>
+            <div class="detail-cell" th:text="${i.cours.enseignant}"></div>
+          </td>
+          <td class="detail-cell">
+            <div th:if="${i.ecole              != null}"><strong>École :</strong> <span th:text="${i.ecole}"></span></div>
+            <div th:if="${i.monBac             != null}"><strong>Bac :</strong> <span th:text="${i.monBac}"></span> <span th:text="${i.anneeBac != null ? '(' + i.anneeBac + ')' : ''}"></span></div>
+            <div th:if="${i.souhaitInscription != null}"><strong>Modalité :</strong> <span th:text="${i.souhaitInscription}"></span></div>
+          </td>
+          <td style="font-size:0.78rem;white-space:nowrap;color:var(--muted);" th:text="${i.dateInscription}"></td>
+          <td>
+            <span class="badge"
+                  th:classappend="${i.statut.name() == 'EN_ATTENTE'} ? 'badge-pending' : (${i.statut.name() == 'VALIDE'} ? 'badge-valid' : 'badge-canceled')"
+                  th:text="${i.statut.label}"></span>
+          </td>
+          <td sec:authorize="hasRole('ADMIN')">
+            <div class="actions" style="flex-wrap:wrap;gap:0.3rem;">
+              <a th:href="@{/inscriptions/valider/{id}(id=${i.id})}" class="btn btn-success" style="font-size:0.75rem;padding:0.28rem 0.6rem;" th:if="${i.statut.name() == 'EN_ATTENTE'}">Valider</a>
+              <a th:href="@{/inscriptions/annuler/{id}(id=${i.id})}" class="btn btn-danger"  style="font-size:0.75rem;padding:0.28rem 0.6rem;" th:if="${i.statut.name() == 'EN_ATTENTE'}" onclick="return confirm('Refuser cette demande ?')">Refuser</a>
+              <a th:href="@{/inscriptions/modifier/{id}(id=${i.id})}" class="btn btn-secondary" style="font-size:0.75rem;padding:0.28rem 0.6rem;">Modifier</a>
+              <a th:href="@{/inscriptions/supprimer/{id}(id=${i.id})}" class="btn btn-danger" style="font-size:0.75rem;padding:0.28rem 0.6rem;" onclick="return confirm('Supprimer ?')">Supprimer</a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

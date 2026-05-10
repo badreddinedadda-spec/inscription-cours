@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${inscription.id != null ? 'Modifier' : 'Nouvelle'} + ' inscription — HighTech EDU'">Inscription</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --blue:#1B3A6B; --blue-m:#2d5299; --blue-l:#EEF3FF; --bg:#F7F9FC; --white:#FFFFFF; --border:#E2E8F0; --text:#0F172A; --muted:#64748B; --soft:#94A3B8; }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); display:flex; height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+
+    /* SIDEBAR */
+    .sidebar { width:232px; flex-shrink:0; background:var(--white); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; }
+    .sb-brand { padding:1.25rem 1.25rem 1rem; border-bottom:1px solid var(--border); }
+    .sb-brand-name { font-family:'Instrument Serif',serif; font-size:1rem; color:var(--blue); }
+    .sb-brand-sub  { font-size:0.63rem; color:var(--soft); margin-top:2px; }
+    .sb-nav { padding:0.75rem; flex:1; }
+    .nav-sec { font-size:0.6rem; font-weight:700; color:var(--soft); letter-spacing:0.1em; text-transform:uppercase; padding:0.85rem 0.75rem 0.35rem; }
+    .nav-a { display:flex; align-items:center; gap:0.6rem; padding:0.52rem 0.75rem; border-radius:7px; text-decoration:none; font-size:0.83rem; font-weight:500; color:var(--muted); transition:background 0.12s,color 0.12s; margin-bottom:2px; }
+    .nav-a:hover { background:var(--bg); color:var(--text); }
+    .nav-a.active { background:var(--blue-l); color:var(--blue); font-weight:600; }
+    .nav-a svg { width:15px; height:15px; flex-shrink:0; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .sb-profile { padding:0.9rem 1.1rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:0.65rem; }
+    .profile-av { width:32px; height:32px; border-radius:50%; background:var(--blue); color:var(--white); display:flex; align-items:center; justify-content:center; font-size:0.73rem; font-weight:700; flex-shrink:0; }
+    .profile-name { font-size:0.8rem; font-weight:600; }
+    .profile-role { font-size:0.67rem; color:var(--muted); margin-top:1px; }
+    .logout-btn { margin-left:auto; background:none; border:none; cursor:pointer; color:var(--muted); padding:0.25rem; border-radius:5px; transition:color 0.12s; display:flex; align-items:center; }
+    .logout-btn:hover { color:#DC2626; }
+    .logout-btn svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* MAIN */
+    .main { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 2rem; border-bottom:1px solid var(--border); background:var(--white); position:sticky; top:0; z-index:10; }
+    .topbar h1 { font-size:1.02rem; font-weight:700; }
+    .topbar a { font-size:0.82rem; color:var(--muted); text-decoration:none; padding:0.4rem 0.9rem; border:1px solid var(--border); border-radius:7px; transition:all 0.12s; }
+    .topbar a:hover { border-color:var(--blue); color:var(--blue); }
+    .content { padding:1.75rem 2rem; max-width:620px; }
+
+    /* FORM */
+    .card { background:var(--white); border:1px solid var(--border); border-radius:9px; overflow:hidden; margin-bottom:1.25rem; }
+    .card-head { padding:0.9rem 1.4rem; border-bottom:1px solid var(--border); background:var(--bg); }
+    .card-head h3 { font-size:0.86rem; font-weight:700; }
+    .card-body { padding:1.4rem; }
+    .form-group { margin-bottom:1rem; }
+    .form-group:last-child { margin-bottom:0; }
+    .form-group label { display:block; font-size:0.75rem; font-weight:600; color:var(--muted); margin-bottom:0.35rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; background:var(--bg); border:1.5px solid var(--border);
+      color:var(--text); padding:0.6rem 0.85rem; border-radius:7px;
+      font-size:0.86rem; outline:none; font-family:inherit; transition:border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color:var(--blue); background:var(--white); box-shadow:0 0 0 3px rgba(27,58,107,0.08); }
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-actions { display:flex; gap:0.6rem; margin-top:1.4rem; }
+    .btn-save { background:var(--blue); color:var(--white); border:none; padding:0.65rem 1.6rem; border-radius:7px; font-size:0.86rem; font-weight:600; cursor:pointer; font-family:inherit; transition:background 0.12s; }
+    .btn-save:hover { background:var(--blue-m); }
+    .btn-cancel { background:none; color:var(--muted); border:1px solid var(--border); padding:0.65rem 1.2rem; border-radius:7px; font-size:0.86rem; font-weight:500; text-decoration:none; transition:all 0.12s; }
+    .btn-cancel:hover { border-color:var(--blue); color:var(--blue); }
+    .flash-err { background:#FFF5F5; border:1px solid #FECACA; color:#991B1B; padding:0.65rem 1rem; border-radius:8px; margin-bottom:1.25rem; font-size:0.83rem; }
+    .req { color:var(--blue); }
+    .badge-new   { display:inline-block; background:var(--blue-l); color:var(--blue); padding:0.15rem 0.65rem; border-radius:100px; font-size:0.7rem; font-weight:700; margin-left:0.5rem; }
+    .badge-edit  { display:inline-block; background:#FEF9EE; color:#B45309; padding:0.15rem 0.65rem; border-radius:100px; font-size:0.7rem; font-weight:700; margin-left:0.5rem; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-name">HighTech EDU</div>
+    <div class="sb-brand-sub">Espace d'administration</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">Principal</div>
+    <a th:href="@{/dashboard}" class="nav-a">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </a>
+    <a th:href="@{/inscriptions}" class="nav-a active">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Inscriptions
+    </a>
+    <a th:href="@{/cours}" class="nav-a">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Cours
+    </a>
+    <a th:href="@{/etudiants}" class="nav-a" sec:authorize="hasRole('ADMIN')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Étudiants
+    </a>
+    <div class="nav-sec">Administration</div>
+    <a th:href="@{/paiements}" class="nav-a">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Paiements
+    </a>
+    <a th:href="@{/inscriptions/en-attente}" class="nav-a">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      En attente
+    </a>
+    <a th:href="@{/parametres}" class="nav-a">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Paramètres
+    </a>
+  </nav>
+  <div class="sb-profile">
+    <div class="profile-av" th:text="${adminUser != null ? adminUser.initiales : 'A'}">A</div>
+    <div style="flex:1;min-width:0;">
+      <div class="profile-name" th:text="${adminUser != null ? adminUser.nomComplet : 'Admin'}">Admin</div>
+      <div class="profile-role" th:text="${adminUser != null ? adminUser.poste : 'Admin'}">Admin</div>
+    </div>
+    <form th:action="@{/logout}" method="post" style="margin:0;">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="logout-btn" title="Déconnexion">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </form>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h1>
+      <span th:if="${inscription.id == null}">
+        Nouvelle inscription
+        <span class="badge-new">Création</span>
+      </span>
+      <span th:if="${inscription.id != null}">
+        Modifier l'inscription
+        <span class="badge-edit"># <span th:text="${inscription.id}"></span></span>
+      </span>
+    </h1>
+    <a th:href="@{/inscriptions}">← Retour aux inscriptions</a>
+  </div>
+
+  <div class="content">
+    <div th:if="${error}" class="flash-err" th:text="${error}"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3 th:text="${inscription.id == null ? 'Informations de la demande' : 'Modifier la demande'}">Formulaire</h3>
+      </div>
+      <div class="card-body">
+        <form th:action="@{/inscriptions/sauvegarder}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="inscriptionId" th:value="${inscription.id}"/>
+
+          <div class="row2">
+            <div class="form-group">
+              <label>Étudiant <span class="req">*</span></label>
+              <select name="etudiantId" required>
+                <option value="" disabled th:selected="${inscription.etudiant == null}">Sélectionner</option>
+                <option th:each="e : ${etudiants}"
+                        th:value="${e.id}"
+                        th:text="${e.prenom + ' ' + e.nom}"
+                        th:selected="${inscription.etudiant != null and inscription.etudiant.id == e.id}">
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Programme <span class="req">*</span></label>
+              <select name="coursId" required>
+                <option value="" disabled th:selected="${inscription.cours == null}">Sélectionner</option>
+                <option th:each="c : ${coursList}"
+                        th:value="${c.id}"
+                        th:text="${c.titre}"
+                        th:selected="${inscription.cours != null and inscription.cours.id == c.id}">
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" sec:authorize="hasRole('ADMIN')">
+            <label>Statut</label>
+            <select name="statut">
+              <option th:each="s : ${statuts}"
+                      th:value="${s.name()}"
+                      th:text="${s.label}"
+                      th:selected="${inscription.statut != null and inscription.statut == s}">
+              </option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save">Enregistrer</button>
+            <a th:href="@{/inscriptions}" class="btn-cancel">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

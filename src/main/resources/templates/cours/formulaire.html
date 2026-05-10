@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Cours — EduManager</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav>
+  <a th:href="@{/dashboard}" class="brand">EduManager</a>
+  <a th:href="@{/etudiants}" sec:authorize="hasRole('ADMIN')">Étudiants</a>
+  <a th:href="@{/cours}" class="active">Cours</a>
+  <a th:href="@{/inscriptions}">Inscriptions</a>
+  <span style="margin-left:auto;color:var(--muted);font-size:0.83rem;" sec:authentication="name"></span>
+  <form th:action="@{/logout}" method="post" style="margin:0;">
+    <button type="submit" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.85rem;border-radius:var(--radius);cursor:pointer;font-size:0.82rem;font-family:inherit;">Déconnexion</button>
+  </form>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <h1 th:text="${cours.id == null} ? 'Nouveau cours' : 'Modifier cours'">Cours</h1>
+    <a th:href="@{/cours}" class="btn btn-secondary">← Retour</a>
+  </div>
+  <div class="form-card">
+    <form th:action="@{/cours/sauvegarder}" th:object="${cours}" method="post">
+      <input type="hidden" th:field="*{id}"/>
+      <div class="form-group">
+        <label>Titre *</label>
+        <input type="text" th:field="*{titre}" th:class="${#fields.hasErrors('titre')} ? 'input-error' : ''" placeholder="Titre du cours"/>
+        <span class="error-msg" th:if="${#fields.hasErrors('titre')}" th:errors="*{titre}"></span>
+      </div>
+      <div class="form-group">
+        <label>Enseignant *</label>
+        <input type="text" th:field="*{enseignant}" th:class="${#fields.hasErrors('enseignant')} ? 'input-error' : ''" placeholder="Enseignant"/>
+        <span class="error-msg" th:if="${#fields.hasErrors('enseignant')}" th:errors="*{enseignant}"></span>
+      </div>
+      <div class="form-group">
+        <label>Durée (heures) *</label>
+        <input type="number" th:field="*{duree}" th:class="${#fields.hasErrors('duree')} ? 'input-error' : ''" min="1" placeholder="Durée en heures"/>
+        <span class="error-msg" th:if="${#fields.hasErrors('duree')}" th:errors="*{duree}"></span>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea th:field="*{description}" placeholder="Description"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+        <a th:href="@{/cours}" class="btn btn-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

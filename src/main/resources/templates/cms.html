@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Éditeur de page — EduManager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:   #1B3A6B;
+      --blue-m: #2d5299;
+      --blue-l: #EEF3FF;
+      --bg:     #F7F9FC;
+      --white:  #FFFFFF;
+      --border: #E2E8F0;
+      --text:   #0F172A;
+      --muted:  #64748B;
+      --soft:   #94A3B8;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
+      display: flex; height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SIDEBAR (identique dashboard) ── */
+    .sidebar {
+      width: 232px; flex-shrink: 0; background: var(--white);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .sb-brand { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--border); }
+    .sb-brand-name { font-family: 'Instrument Serif', serif; font-size: 1rem; color: var(--blue); }
+    .sb-brand-sub  { font-size: 0.63rem; color: var(--soft); margin-top: 2px; letter-spacing: 0.2px; }
+    .sb-nav { padding: 0.75rem; flex: 1; }
+    .nav-sec {
+      font-size: 0.6rem; font-weight: 700; color: var(--soft);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.85rem 0.75rem 0.35rem;
+    }
+    .nav-a {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.52rem 0.75rem; border-radius: 7px;
+      text-decoration: none; font-size: 0.83rem; font-weight: 500;
+      color: var(--muted); transition: background 0.12s, color 0.12s;
+      margin-bottom: 2px;
+    }
+    .nav-a:hover { background: var(--bg); color: var(--text); }
+    .nav-a.active { background: var(--blue-l); color: var(--blue); font-weight: 600; }
+    .nav-a svg { width: 15px; height: 15px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-badge {
+      margin-left: auto; background: var(--blue); color: var(--white);
+      font-size: 0.62rem; font-weight: 700; padding: 0.1rem 0.42rem;
+      border-radius: 100px; min-width: 18px; text-align: center;
+    }
+    .sb-profile {
+      padding: 0.9rem 1.1rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.65rem;
+    }
+    .profile-av {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue); color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.73rem; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 0.8rem; font-weight: 600; }
+    .profile-role { font-size: 0.67rem; color: var(--muted); margin-top: 1px; }
+    .logout-btn {
+      margin-left: auto; background: none; border: none; cursor: pointer;
+      color: var(--muted); padding: 0.25rem; border-radius: 5px;
+      transition: color 0.12s; display: flex; align-items: center;
+    }
+    .logout-btn:hover { color: #DC2626; }
+    .logout-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 2rem; border-bottom: 1px solid var(--border);
+      background: var(--white); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-left h1 { font-size: 1.02rem; font-weight: 700; }
+    .topbar-left p  { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+    .topbar-right { display: flex; gap: 0.75rem; align-items: center; }
+
+    .btn-save {
+      background: var(--blue); color: var(--white); border: none;
+      padding: 0.48rem 1.3rem; border-radius: 7px; font-size: 0.83rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-save:hover { background: var(--blue-m); }
+    .btn-preview {
+      background: none; color: var(--blue); border: 1.5px solid var(--blue);
+      padding: 0.45rem 1.1rem; border-radius: 7px; font-size: 0.83rem;
+      font-weight: 600; cursor: pointer; font-family: inherit; text-decoration: none;
+      display: flex; align-items: center; gap: 0.4rem;
+      transition: all 0.15s;
+    }
+    .btn-preview:hover { background: var(--blue-l); }
+    .btn-preview svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .content { padding: 1.75rem 2rem; flex: 1; }
+
+    .flash-ok  { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; padding: 0.65rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.83rem; }
+    .flash-err { background: #FFF5F5; border: 1px solid #FECACA; color: #991B1B; padding: 0.65rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.83rem; }
+
+    /* ── CMS EDITOR LAYOUT ── */
+    .cms-intro {
+      background: var(--blue-l); border: 1px solid #c7d9f8;
+      border-radius: 10px; padding: 1rem 1.25rem;
+      margin-bottom: 1.75rem; font-size: 0.83rem; color: var(--blue);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .cms-intro svg { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .cms-section {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 1.25rem; overflow: hidden;
+    }
+    .cms-section-head {
+      padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border);
+      background: var(--bg); display: flex; align-items: center; gap: 0.6rem;
+      cursor: pointer; user-select: none;
+    }
+    .cms-section-head h3 { font-size: 0.88rem; font-weight: 700; flex: 1; }
+    .cms-section-head .chevron {
+      width: 16px; height: 16px; stroke: var(--muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+    .cms-section-body { padding: 1.25rem; display: grid; gap: 1rem; }
+    .cms-section-body.collapsed { display: none; }
+
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field label {
+      font-size: 0.72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .field input[type="text"],
+    .field textarea {
+      width: 100%; padding: 0.55rem 0.8rem;
+      border: 1.5px solid var(--border); border-radius: 7px;
+      font-size: 0.85rem; font-family: inherit; color: var(--text);
+      background: var(--white); transition: border-color 0.15s, box-shadow 0.15s;
+      resize: vertical;
+    }
+    .field input[type="text"]:focus,
+    .field textarea:focus {
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+    }
+    .field textarea { min-height: 80px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Character count */
+    .field-meta { font-size: 0.68rem; color: var(--soft); text-align: right; }
+
+    /* Section icons */
+    .sec-icon { width: 22px; height: 22px; stroke: var(--blue); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-name">HighTech EDU</div>
+    <div class="sb-brand-sub">Espace d'administration</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">Principal</div>
+    <a th:href="@{/dashboard}" class="nav-a">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </a>
+    <a th:href="@{/inscriptions}" class="nav-a">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Inscriptions
+      <span class="nav-badge" th:if="${demandesEnAttente > 0}" th:text="${demandesEnAttente}">0</span>
+    </a>
+    <a th:href="@{/cours}" class="nav-a">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Cours
+    </a>
+    <a th:href="@{/etudiants}" class="nav-a" sec:authorize="hasRole('ADMIN')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Étudiants
+    </a>
+    <div class="nav-sec">Administration</div>
+    <a th:href="@{/paiements}" class="nav-a">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Paiements
+    </a>
+    <a th:href="@{/parametres}" class="nav-a">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Paramètres
+    </a>
+    <div class="nav-sec">Contenu</div>
+    <a th:href="@{/cms}" class="nav-a active">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Éditeur de page
+    </a>
+    <a th:href="@{/}" class="nav-a" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Voir la page publique
+    </a>
+  </nav>
+  <div class="sb-profile">
+    <div class="profile-av" th:text="${adminUser != null ? adminUser.initiales : 'A'}">A</div>
+    <div style="flex:1;min-width:0;">
+      <div class="profile-name" th:text="${adminUser != null ? adminUser.nomComplet : 'Admin'}">Admin</div>
+      <div class="profile-role" th:text="${adminUser != null ? adminUser.poste : 'Admin'}">Admin</div>
+    </div>
+    <form th:action="@{/logout}" method="post" style="margin:0;">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="logout-btn" title="Déconnexion">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </form>
+  </div>
+</aside>
+
+<!-- ── ZONE PRINCIPALE ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Éditeur de page d'accueil</h1>
+      <p>Modifiez les textes et cliquez sur Enregistrer — les changements sont immédiats.</p>
+    </div>
+    <div class="topbar-right">
+      <a th:href="@{/}" target="_blank" class="btn-preview">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Aperçu
+      </a>
+      <button type="submit" form="cmsForm" class="btn-save">Enregistrer</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div th:if="${success}" class="flash-ok" th:text="${success}"></div>
+    <div th:if="${error}"   class="flash-err" th:text="${error}"></div>
+
+    <div class="cms-intro">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Tous les textes de la page d'accueil publique sont éditables ici. Aucun fichier HTML ou Java à modifier.
+      Les modifications sont visibles instantanément après enregistrement.
+    </div>
+
+    <form th:action="@{/cms/sauvegarder}" method="post" id="cmsForm">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+      <!-- ── SECTION LOGO ── -->
+      <div class="cms-section">
+        <div class="cms-section-head" onclick="toggleSection(this)">
+          <svg class="sec-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <h3>Logo &amp; Identité</h3>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="cms-section-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Nom principal (logo)</label>
+              <input type="text" name="logo_nom"
+                     th:value="${contenus.?[cle == 'logo_nom'][0]?.valeur}" maxlength="60"/>
+            </div>
+            <div class="field">
+              <label>Sous-titre du logo</label>
+              <input type="text" name="logo_sous_titre"
+                     th:value="${contenus.?[cle == 'logo_sous_titre'][0]?.valeur}" maxlength="60"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION HÉRO ── -->
+      <div class="cms-section">
+        <div class="cms-section-head" onclick="toggleSection(this)">
+          <svg class="sec-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <h3>Section Héro (bandeau principal)</h3>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="cms-section-body">
+          <div class="field">
+            <label>Bandeau d'accroche (petit texte au-dessus du titre)</label>
+            <input type="text" name="hero_eyebrow"
+                   th:value="${contenus.?[cle == 'hero_eyebrow'][0]?.valeur}" maxlength="80"/>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Titre — Ligne 1</label>
+              <input type="text" name="hero_titre_ligne1"
+                     th:value="${contenus.?[cle == 'hero_titre_ligne1'][0]?.valeur}" maxlength="60"/>
+            </div>
+            <div class="field">
+              <label>Titre — Mot en italique (bleu)</label>
+              <input type="text" name="hero_titre_italic"
+                     th:value="${contenus.?[cle == 'hero_titre_italic'][0]?.valeur}" maxlength="40"/>
+            </div>
+          </div>
+          <div class="field">
+            <label>Titre — Ligne 3</label>
+            <input type="text" name="hero_titre_ligne3"
+                   th:value="${contenus.?[cle == 'hero_titre_ligne3'][0]?.valeur}" maxlength="60"/>
+          </div>
+          <div class="field">
+            <label>Paragraphe de description</label>
+            <textarea name="hero_description"
+                      th:text="${contenus.?[cle == 'hero_description'][0]?.valeur}"></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Bouton principal (CTA)</label>
+              <input type="text" name="hero_cta_principal"
+                     th:value="${contenus.?[cle == 'hero_cta_principal'][0]?.valeur}" maxlength="60"/>
+            </div>
+            <div class="field">
+              <label>Lien secondaire</label>
+              <input type="text" name="hero_cta_lien"
+                     th:value="${contenus.?[cle == 'hero_cta_lien'][0]?.valeur}" maxlength="60"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION PROGRAMMES ── -->
+      <div class="cms-section">
+        <div class="cms-section-head" onclick="toggleSection(this)">
+          <svg class="sec-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          <h3>Section Programmes</h3>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="cms-section-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Petit titre (eyebrow)</label>
+              <input type="text" name="programmes_eyebrow"
+                     th:value="${contenus.?[cle == 'programmes_eyebrow'][0]?.valeur}" maxlength="60"/>
+            </div>
+            <div class="field">
+              <label>Grand titre</label>
+              <input type="text" name="programmes_titre"
+                     th:value="${contenus.?[cle == 'programmes_titre'][0]?.valeur}" maxlength="100"/>
+            </div>
+          </div>
+          <div class="field">
+            <label>Sous-titre / phrase d'accroche</label>
+            <textarea name="programmes_sous_titre"
+                      th:text="${contenus.?[cle == 'programmes_sous_titre'][0]?.valeur}"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION ENGAGEMENTS ── -->
+      <div class="cms-section">
+        <div class="cms-section-head" onclick="toggleSection(this)">
+          <svg class="sec-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <h3>Section Engagements (4 arguments)</h3>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="cms-section-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Petit titre (eyebrow)</label>
+              <input type="text" name="engagements_eyebrow"
+                     th:value="${contenus.?[cle == 'engagements_eyebrow'][0]?.valeur}" maxlength="60"/>
+            </div>
+            <div class="field">
+              <label>Grand titre</label>
+              <input type="text" name="engagements_titre"
+                     th:value="${contenus.?[cle == 'engagements_titre'][0]?.valeur}" maxlength="100"/>
+            </div>
+          </div>
+
+          <!-- Engagement 01 -->
+          <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--bg);">
+            <p style="font-size:0.72rem;font-weight:700;color:var(--blue);margin-bottom:0.75rem;">Argument 01</p>
+            <div class="field-row">
+              <div class="field">
+                <label>Titre</label>
+                <input type="text" name="engagement_1_titre"
+                       th:value="${contenus.?[cle == 'engagement_1_titre'][0]?.valeur}" maxlength="60"/>
+              </div>
+              <div class="field">
+                <label>Texte</label>
+                <input type="text" name="engagement_1_texte"
+                       th:value="${contenus.?[cle == 'engagement_1_texte'][0]?.valeur}" maxlength="200"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Engagement 02 -->
+          <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--bg);">
+            <p style="font-size:0.72rem;font-weight:700;color:var(--blue);margin-bottom:0.75rem;">Argument 02</p>
+            <div class="field-row">
+              <div class="field">
+                <label>Titre</label>
+                <input type="text" name="engagement_2_titre"
+                       th:value="${contenus.?[cle == 'engagement_2_titre'][0]?.valeur}" maxlength="60"/>
+              </div>
+              <div class="field">
+                <label>Texte</label>
+                <input type="text" name="engagement_2_texte"
+                       th:value="${contenus.?[cle == 'engagement_2_texte'][0]?.valeur}" maxlength="200"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Engagement 03 -->
+          <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--bg);">
+            <p style="font-size:0.72rem;font-weight:700;color:var(--blue);margin-bottom:0.75rem;">Argument 03</p>
+            <div class="field-row">
+              <div class="field">
+                <label>Titre</label>
+                <input type="text" name="engagement_3_titre"
+                       th:value="${contenus.?[cle == 'engagement_3_titre'][0]?.valeur}" maxlength="60"/>
+              </div>
+              <div class="field">
+                <label>Texte</label>
+                <input type="text" name="engagement_3_texte"
+                       th:value="${contenus.?[cle == 'engagement_3_texte'][0]?.valeur}" maxlength="200"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Engagement 04 -->
+          <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--bg);">
+            <p style="font-size:0.72rem;font-weight:700;color:var(--blue);margin-bottom:0.75rem;">Argument 04</p>
+            <div class="field-row">
+              <div class="field">
+                <label>Titre</label>
+                <input type="text" name="engagement_4_titre"
+                       th:value="${contenus.?[cle == 'engagement_4_titre'][0]?.valeur}" maxlength="60"/>
+              </div>
+              <div class="field">
+                <label>Texte</label>
+                <input type="text" name="engagement_4_texte"
+                       th:value="${contenus.?[cle == 'engagement_4_texte'][0]?.valeur}" maxlength="200"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION FOOTER ── -->
+      <div class="cms-section">
+        <div class="cms-section-head" onclick="toggleSection(this)">
+          <svg class="sec-icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <h3>Footer</h3>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="cms-section-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Email de contact</label>
+              <input type="text" name="footer_email"
+                     th:value="${contenus.?[cle == 'footer_email'][0]?.valeur}" maxlength="100"/>
+            </div>
+            <div class="field">
+              <label>Texte copyright</label>
+              <input type="text" name="footer_copyright"
+                     th:value="${contenus.?[cle == 'footer_copyright'][0]?.valeur}" maxlength="80"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton bas de page -->
+      <div style="display:flex;justify-content:flex-end;padding-top:0.5rem;">
+        <button type="submit" class="btn-save" style="padding:0.65rem 2.5rem;font-size:0.9rem;">
+          💾 Enregistrer toutes les modifications
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleSection(head) {
+    const body = head.nextElementSibling;
+    const chevron = head.querySelector('.chevron');
+    body.classList.toggle('collapsed');
+    chevron.style.transform = body.classList.contains('collapsed') ? 'rotate(-90deg)' : '';
+  }
+</script>
+</body>
+</html>

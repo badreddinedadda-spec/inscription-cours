@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Étudiant — EduManager</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav>
+  <a th:href="@{/dashboard}" class="brand">EduManager</a>
+  <a th:href="@{/etudiants}" class="active">Étudiants</a>
+  <a th:href="@{/cours}">Cours</a>
+  <a th:href="@{/inscriptions}">Inscriptions</a>
+  <span style="margin-left:auto;color:var(--muted);font-size:0.83rem;" sec:authentication="name"></span>
+  <form th:action="@{/logout}" method="post" style="margin:0;">
+    <button type="submit" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.85rem;border-radius:var(--radius);cursor:pointer;font-size:0.82rem;font-family:inherit;">Déconnexion</button>
+  </form>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <h1 th:text="${etudiant.id == null} ? 'Nouvel étudiant' : 'Modifier étudiant'">Étudiant</h1>
+    <a th:href="@{/etudiants}" class="btn btn-secondary">← Retour</a>
+  </div>
+  <div class="form-card">
+    <form th:action="@{/etudiants/sauvegarder}" th:object="${etudiant}" method="post">
+      <input type="hidden" th:field="*{id}"/>
+      <div style="display:grid;grid-template-columns:110px 1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label>Civilité</label>
+          <select th:field="*{civilite}">
+            <option value="">—</option>
+            <option value="M.">M.</option>
+            <option value="Mme">Mme</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" th:field="*{nom}" th:class="${#fields.hasErrors('nom')} ? 'input-error' : ''" placeholder="Nom"/>
+          <span class="error-msg" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}"></span>
+        </div>
+        <div class="form-group">
+          <label>Prénom *</label>
+          <input type="text" th:field="*{prenom}" th:class="${#fields.hasErrors('prenom')} ? 'input-error' : ''" placeholder="Prénom"/>
+          <span class="error-msg" th:if="${#fields.hasErrors('prenom')}" th:errors="*{prenom}"></span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>E-mail *</label>
+        <input type="email" th:field="*{email}" th:class="${#fields.hasErrors('email')} ? 'input-error' : ''" placeholder="Adresse e-mail"/>
+        <span class="error-msg" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" th:field="*{telephone}" placeholder="Téléphone"/>
+        </div>
+        <div class="form-group">
+          <label>WhatsApp</label>
+          <input type="tel" th:field="*{whatsapp}" placeholder="Téléphone"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label>Pays</label>
+          <input type="text" th:field="*{pays}" placeholder="Pays"/>
+        </div>
+        <div class="form-group">
+          <label>Ville</label>
+          <input type="text" th:field="*{ville}" placeholder="Ville"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Date de naissance</label>
+        <input type="date" th:field="*{dateNaissance}"/>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+        <a th:href="@{/etudiants}" class="btn btn-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

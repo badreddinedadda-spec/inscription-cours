@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Étudiants — EduManager</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <style>
+    .search-bar { display:flex; gap:0.65rem; margin-bottom:1rem; align-items:center; }
+    .search-bar input { flex:1; padding:0.5rem 0.85rem; background:#fff; border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:0.86rem; font-family:inherit; outline:none; transition:border-color 0.15s; }
+    .search-bar input:focus { border-color:var(--accent); }
+    .search-bar button { padding:0.5rem 1rem; background:var(--accent); color:#fff; border:none; border-radius:var(--radius); cursor:pointer; font-weight:600; font-size:0.84rem; font-family:inherit; }
+    .search-bar button:hover { background:var(--accent-h); }
+    .search-bar a { padding:0.5rem 0.85rem; color:var(--muted); border:1px solid var(--border); border-radius:var(--radius); text-decoration:none; font-size:0.82rem; }
+    .search-bar a:hover { color:var(--text); }
+    .search-info { font-size:0.8rem; color:var(--muted); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .page-size select { background:#fff; border:1px solid var(--border); color:var(--text); border-radius:6px; padding:0.25rem 0.5rem; font-size:0.8rem; font-family:inherit; outline:none; }
+    .pagination { display:flex; align-items:center; justify-content:center; gap:0.4rem; margin-top:1.25rem; flex-wrap:wrap; }
+    .pagination a, .pagination span { padding:0.4rem 0.75rem; border-radius:var(--radius); font-size:0.82rem; text-decoration:none; border:1px solid var(--border); color:var(--muted); transition:all 0.15s; }
+    .pagination a:hover { border-color:var(--accent); color:var(--accent); }
+    .pagination .active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .pagination .disabled { opacity:0.35; pointer-events:none; }
+  </style>
+</head>
+<body>
+<nav>
+  <a th:href="@{/dashboard}" class="brand">EduManager</a>
+  <a th:href="@{/etudiants}" class="active">Étudiants</a>
+  <a th:href="@{/cours}">Cours</a>
+  <a th:href="@{/inscriptions}">Inscriptions</a>
+  <span style="margin-left:auto; color:var(--muted); font-size:0.83rem;" sec:authentication="name"></span>
+  <form th:action="@{/logout}" method="post" style="margin:0;">
+    <button type="submit" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.85rem;border-radius:var(--radius);cursor:pointer;font-size:0.82rem;font-family:inherit;">Déconnexion</button>
+  </form>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Étudiants</h1>
+    <a th:href="@{/etudiants/nouveau}" class="btn btn-primary">+ Nouvel étudiant</a>
+  </div>
+
+  <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+
+  <!-- Export -->
+  <div style="display:flex; gap:0.65rem; margin-bottom:1rem; flex-wrap:wrap;">
+    <a th:href="@{/export/etudiants/excel(search=${search})}" class="btn btn-secondary">Exporter Excel</a>
+    <a th:href="@{/export/etudiants/pdf(search=${search})}"   class="btn btn-secondary">Exporter PDF</a>
+  </div>
+
+  <!-- Recherche -->
+  <form th:action="@{/etudiants}" method="get" class="search-bar">
+    <input type="text" name="search" th:value="${search}" placeholder="Rechercher par nom, prénom ou e-mail…" autocomplete="off"/>
+    <input type="hidden" name="size" th:value="${size}"/>
+    <button type="submit">Rechercher</button>
+    <a th:href="@{/etudiants}" th:if="${!#strings.isEmpty(search)}">✕ Effacer</a>
+  </form>
+
+  <div class="search-info">
+    <span th:if="${!#strings.isEmpty(search)}"><strong th:text="${totalItems}"></strong> résultat(s) pour « <em th:text="${search}"></em> » ·</span>
+    <span th:text="${totalItems + ' étudiant(s) au total'}"></span>
+    &nbsp;·&nbsp;
+    <span class="page-size">Afficher
+      <select onchange="changeSize(this.value)">
+        <option th:each="s : ${#numbers.sequence(5, 20, 5)}" th:value="${s}" th:text="${s}" th:selected="${s == size}"></option>
+      </select>
+      par page
+    </span>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Nom</th><th>Prénom</th><th>E-mail</th><th>Date de naissance</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr th:if="${#lists.isEmpty(etudiants)}">
+          <td colspan="6">
+            <div class="empty-state">
+              <div class="icon">🔍</div>
+              <div th:text="${#strings.isEmpty(search)} ? 'Aucun étudiant enregistré.' : 'Aucun résultat pour cette recherche.'"></div>
+            </div>
+          </td>
+        </tr>
+        <tr th:each="etudiant : ${etudiants}">
+          <td style="color:var(--muted);font-size:0.8rem;" th:text="${etudiant.id}"></td>
+          <td style="font-weight:600;" th:text="${etudiant.nom}"></td>
+          <td th:text="${etudiant.prenom}"></td>
+          <td style="color:var(--muted);" th:text="${etudiant.email}"></td>
+          <td style="color:var(--muted);" th:text="${etudiant.dateNaissance != null ? etudiant.dateNaissance : '—'}"></td>
+          <td>
+            <div class="actions">
+              <a th:href="@{/etudiants/{id}/cours(id=${etudiant.id})}" class="btn btn-secondary">Ses cours</a>
+              <a th:href="@{/etudiants/modifier/{id}(id=${etudiant.id})}" class="btn btn-success">Modifier</a>
+              <a th:href="@{/etudiants/supprimer/{id}(id=${etudiant.id})}" class="btn btn-danger" onclick="return confirm('Supprimer cet étudiant ?')">Supprimer</a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" th:if="${totalPages > 1}">
+    <a th:href="@{/etudiants(page=0, size=${size}, search=${search})}" th:classappend="${currentPage == 0} ? 'disabled'">&laquo;</a>
+    <a th:href="@{/etudiants(page=${currentPage - 1}, size=${size}, search=${search})}" th:classappend="${currentPage == 0} ? 'disabled'">&lsaquo;</a>
+    <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+      <a th:href="@{/etudiants(page=${i}, size=${size}, search=${search})}" th:text="${i + 1}" th:classappend="${i == currentPage} ? 'active'"></a>
+    </th:block>
+    <a th:href="@{/etudiants(page=${currentPage + 1}, size=${size}, search=${search})}" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">&rsaquo;</a>
+    <a th:href="@{/etudiants(page=${totalPages - 1}, size=${size}, search=${search})}" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">&raquo;</a>
+  </div>
+</div>
+
+<script>
+function changeSize(val) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('size', val);
+  url.searchParams.set('page', '0');
+  window.location.href = url.toString();
+}
+</script>
+</body>
+</html>

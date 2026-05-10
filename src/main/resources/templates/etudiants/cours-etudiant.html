@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Cours de l'étudiant — EduManager</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav>
+  <a th:href="@{/dashboard}" class="brand">EduManager</a>
+  <a th:href="@{/etudiants}" class="active">Étudiants</a>
+  <a th:href="@{/cours}">Cours</a>
+  <a th:href="@{/inscriptions}">Inscriptions</a>
+  <span style="margin-left:auto;color:var(--muted);font-size:0.83rem;" sec:authentication="name"></span>
+  <form th:action="@{/logout}" method="post" style="margin:0;">
+    <button type="submit" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.85rem;border-radius:var(--radius);cursor:pointer;font-size:0.82rem;font-family:inherit;">Déconnexion</button>
+  </form>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <h1>Cours de <span th:text="${etudiant.prenom + ' ' + etudiant.nom}"></span></h1>
+    <a th:href="@{/etudiants}" class="btn btn-secondary">← Retour</a>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;gap:2.5rem;">
+    <div>
+      <div style="font-size:0.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">E-mail</div>
+      <div th:text="${etudiant.email}"></div>
+    </div>
+    <div>
+      <div style="font-size:0.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Date de naissance</div>
+      <div th:text="${etudiant.dateNaissance != null ? etudiant.dateNaissance : '—'}"></div>
+    </div>
+    <div>
+      <div style="font-size:0.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Cours suivis</div>
+      <div style="font-weight:700;color:var(--accent);" th:text="${#lists.size(inscriptions)}"></div>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Titre du cours</th><th>Enseignant</th><th>Durée (h)</th><th>Date d'inscription</th></tr>
+      </thead>
+      <tbody>
+        <tr th:if="${#lists.isEmpty(inscriptions)}">
+          <td colspan="5"><div class="empty-state"><div class="icon">—</div><div>Cet étudiant n'est inscrit à aucun cours.</div></div></td>
+        </tr>
+        <tr th:each="inscription : ${inscriptions}">
+          <td style="color:var(--muted);font-size:0.8rem;" th:text="${inscription.cours.id}"></td>
+          <td style="font-weight:600;" th:text="${inscription.cours.titre}"></td>
+          <td th:text="${inscription.cours.enseignant}"></td>
+          <td style="color:var(--muted);" th:text="${inscription.cours.duree}"></td>
+          <td style="color:var(--muted);" th:text="${inscription.dateInscription}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

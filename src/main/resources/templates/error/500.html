@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Erreur serveur — HighTech EDU</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family:'DM Sans',sans-serif; background:#F7F9FC; min-height:100vh; display:flex; align-items:center; justify-content:center; color:#0F172A; }
+    .box { text-align:center; max-width:400px; padding:2.5rem 2rem; }
+    .code { font-size:4.5rem; font-weight:700; color:#991B1B; letter-spacing:-3px; line-height:1; }
+    .msg  { font-size:1.05rem; font-weight:600; margin:0.85rem 0 0.45rem; }
+    .sub  { font-size:0.85rem; color:#64748B; margin-bottom:2rem; line-height:1.65; }
+    .actions { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; }
+    .btn-back { display:inline-block; padding:0.6rem 1.4rem; background:#1B3A6B; color:#fff; border-radius:7px; text-decoration:none; font-size:0.85rem; font-weight:600; transition:background 0.12s; }
+    .btn-back:hover { background:#2d5299; }
+    .btn-alt { display:inline-block; padding:0.6rem 1.2rem; background:none; color:#64748B; border:1px solid #E2E8F0; border-radius:7px; text-decoration:none; font-size:0.85rem; transition:all 0.12s; }
+    .btn-alt:hover { border-color:#1B3A6B; color:#1B3A6B; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <div class="code">500</div>
+  <p class="msg">Erreur serveur</p>
+  <p class="sub" th:text="${message != null ? message : 'Une erreur inattendue s\'est produite. Veuillez réessayer.'}">Une erreur inattendue s'est produite.</p>
+  <div class="actions">
+    <!-- Admin context: back to dashboard -->
+    <a th:if="${isAdmin}" th:href="@{/dashboard}" class="btn-back">← Tableau de bord</a>
+    <a th:if="${isAdmin}" th:href="@{/inscriptions}" class="btn-alt">Inscriptions</a>
+    <!-- Public context: back to landing -->
+    <a th:unless="${isAdmin}" href="/" class="btn-back">← Retour à l'accueil</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paiements — HighTech EDU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:#1B3A6B; --blue-m:#2d5299; --blue-l:#EEF3FF;
+      --bg:#F7F9FC; --white:#FFFFFF; --border:#E2E8F0;
+      --text:#0F172A; --muted:#64748B; --soft:#94A3B8;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); display:flex; height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+
+    /* ── SIDEBAR (identical to index.html) ── */
+    .sidebar { width:232px; flex-shrink:0; background:var(--white); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; }
+    .sb-brand { padding:1.25rem 1.25rem 1rem; border-bottom:1px solid var(--border); }
+    .sb-brand-name { font-family:'Instrument Serif',serif; font-size:1rem; color:var(--blue); }
+    .sb-brand-sub  { font-size:0.63rem; color:var(--soft); margin-top:2px; letter-spacing:0.2px; }
+    .sb-nav { padding:0.75rem; flex:1; }
+    .nav-sec { font-size:0.6rem; font-weight:700; color:var(--soft); letter-spacing:0.1em; text-transform:uppercase; padding:0.85rem 0.75rem 0.35rem; }
+    .nav-a { display:flex; align-items:center; gap:0.6rem; padding:0.52rem 0.75rem; border-radius:7px; text-decoration:none; font-size:0.83rem; font-weight:500; color:var(--muted); transition:background 0.12s,color 0.12s; margin-bottom:2px; }
+    .nav-a:hover { background:var(--bg); color:var(--text); }
+    .nav-a.active { background:var(--blue-l); color:var(--blue); font-weight:600; }
+    .nav-a svg { width:15px; height:15px; flex-shrink:0; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .nav-badge { margin-left:auto; background:var(--blue); color:var(--white); font-size:0.62rem; font-weight:700; padding:0.1rem 0.42rem; border-radius:100px; min-width:18px; text-align:center; }
+    .sb-profile { padding:0.9rem 1.1rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:0.65rem; }
+    .profile-av { width:32px; height:32px; border-radius:50%; background:var(--blue); color:var(--white); display:flex; align-items:center; justify-content:center; font-size:0.73rem; font-weight:700; flex-shrink:0; }
+    .profile-name { font-size:0.8rem; font-weight:600; }
+    .profile-role { font-size:0.67rem; color:var(--muted); margin-top:1px; }
+    .logout-btn { margin-left:auto; background:none; border:none; cursor:pointer; color:var(--muted); padding:0.25rem; border-radius:5px; transition:color 0.12s; display:flex; align-items:center; }
+    .logout-btn:hover { color:#DC2626; }
+    .logout-btn svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── MAIN ── */
+    .main { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 2rem; border-bottom:1px solid var(--border); background:var(--white); position:sticky; top:0; z-index:10; }
+    .topbar h1 { font-size:1.02rem; font-weight:700; }
+    .topbar p  { font-size:0.78rem; color:var(--muted); margin-top:1px; }
+    .content { padding:1.75rem 2rem; flex:1; }
+
+    /* ── STATS ── */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.75rem; }
+    .scard { background:var(--white); border:1px solid var(--border); border-radius:9px; padding:1.1rem 1.25rem; }
+    .scard .lbl { font-size:0.71rem; color:var(--muted); font-weight:500; margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em; }
+    .scard .val { font-family:'Instrument Serif',serif; font-size:2rem; color:var(--text); line-height:1; }
+    .scard .val.accent { color:var(--blue); }
+    .scard .sub { font-size:0.72rem; color:var(--muted); margin-top:0.3rem; }
+
+    /* ── TABLE PANEL ── */
+    .panel { background:var(--white); border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+    .panel-head { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem; border-bottom:1px solid var(--border); background:var(--bg); }
+    .panel-head h3 { font-size:0.86rem; font-weight:700; }
+    .panel-head p  { font-size:0.75rem; color:var(--muted); }
+
+    table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    th { padding:0.55rem 1rem; text-align:left; font-size:0.67rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid var(--border); }
+    td { padding:0.65rem 1rem; border-top:1px solid var(--border); vertical-align:middle; }
+    tbody tr:first-child td { border-top:none; }
+    tbody tr:hover td { background:var(--bg); }
+
+    .sname  { font-weight:600; font-size:0.84rem; }
+    .semail { font-size:0.72rem; color:var(--muted); margin-top:1px; }
+
+    .badge-paid    { display:inline-block; padding:0.15rem 0.6rem; border-radius:100px; font-size:0.68rem; font-weight:600; background:#DCFCE7; color:#166534; }
+    .badge-pending { display:inline-block; padding:0.15rem 0.6rem; border-radius:100px; font-size:0.68rem; font-weight:600; background:#FEF3C7; color:#92400E; }
+
+    /* ── INLINE PAYMENT FORM ── */
+    .pay-form { display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; }
+    .pay-select, .pay-input {
+      background:var(--bg); border:1.5px solid var(--border); color:var(--text);
+      padding:0.3rem 0.6rem; border-radius:6px; font-size:0.76rem;
+      font-family:inherit; outline:none; transition:border-color 0.15s;
+    }
+    .pay-select:focus, .pay-input:focus { border-color:var(--blue); }
+    .pay-input { width:80px; }
+    .pay-btn {
+      background:var(--blue); color:var(--white); border:none;
+      padding:0.32rem 0.85rem; border-radius:6px; font-size:0.75rem;
+      font-weight:600; cursor:pointer; font-family:inherit; transition:background 0.12s;
+    }
+    .pay-btn:hover { background:var(--blue-m); }
+    .empty-row { text-align:center; color:var(--muted); padding:3rem; }
+
+    /* ── FLASH ── */
+    .flash-ok  { background:#F0FDF4; border:1px solid #86EFAC; color:#166534; padding:0.65rem 1rem; border-radius:8px; margin-bottom:1.25rem; font-size:0.83rem; }
+    .flash-err { background:#FFF5F5; border:1px solid #FECACA; color:#991B1B; padding:0.65rem 1rem; border-radius:8px; margin-bottom:1.25rem; font-size:0.83rem; }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR (same as index.html) ── -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-name">HighTech EDU</div>
+    <div class="sb-brand-sub">Espace d'administration</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">Principal</div>
+    <a th:href="@{/dashboard}" class="nav-a">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </a>
+    <a th:href="@{/inscriptions}" class="nav-a">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Inscriptions
+      <span class="nav-badge" th:if="${demandesEnAttente != null and demandesEnAttente > 0}" th:text="${demandesEnAttente}">0</span>
+    </a>
+    <a th:href="@{/cours}" class="nav-a">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Cours
+    </a>
+    <a th:href="@{/etudiants}" class="nav-a" sec:authorize="hasRole('ADMIN')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Étudiants
+    </a>
+    <div class="nav-sec">Administration</div>
+    <a th:href="@{/paiements}" class="nav-a active">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Paiements
+    </a>
+    <a th:href="@{/inscriptions/en-attente}" class="nav-a">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      En attente
+      <span class="nav-badge" th:if="${demandesEnAttente != null and demandesEnAttente > 0}" th:text="${demandesEnAttente}">0</span>
+    </a>
+    <a th:href="@{/parametres}" class="nav-a">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Paramètres
+    </a>
+  </nav>
+  <div class="sb-profile">
+    <div class="profile-av" th:text="${adminUser != null ? adminUser.initiales : 'A'}">A</div>
+    <div style="flex:1;min-width:0;">
+      <div class="profile-name" th:text="${adminUser != null ? adminUser.nomComplet : 'Admin'}">Admin</div>
+      <div class="profile-role" th:text="${adminUser != null ? adminUser.poste : 'Admin'}">Admin</div>
+    </div>
+    <form th:action="@{/logout}" method="post" style="margin:0;">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="logout-btn" title="Déconnexion">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </form>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <h1>Suivi des paiements</h1>
+      <p>Inscriptions validées — enregistrez les règlements reçus</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <div th:if="${success}" class="flash-ok" th:text="${success}"></div>
+    <div th:if="${error}"   class="flash-err" th:text="${error}"></div>
+
+    <div class="stats-row">
+      <div class="scard">
+        <div class="lbl">Validées</div>
+        <div class="val accent" th:text="${inscriptionsValidees != null ? #lists.size(inscriptionsValidees) : 0}">0</div>
+        <div class="sub">En suivi paiement</div>
+      </div>
+      <div class="scard">
+        <div class="lbl">Paiements reçus</div>
+        <div class="val" th:text="${paiementsEffectues != null ? paiementsEffectues : 0}">0</div>
+        <div class="sub">Confirmés</div>
+      </div>
+      <div class="scard">
+        <div class="lbl">Non payés</div>
+        <div class="val" th:text="${nonPayes != null ? nonPayes : 0}">0</div>
+        <div class="sub">En attente de règlement</div>
+      </div>
+      <div class="scard">
+        <div class="lbl">En attente inscription</div>
+        <div class="val" th:text="${demandesEnAttente != null ? demandesEnAttente : 0}">0</div>
+        <div class="sub">À valider d'abord</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Inscriptions validées</h3>
+        <p>Sélectionnez le mode, le montant et la référence puis cliquez sur Sauver</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Étudiant</th>
+            <th>Programme</th>
+            <th>Date</th>
+            <th>Mode</th>
+            <th>Montant</th>
+            <th>Référence</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${inscriptionsValidees == null or #lists.isEmpty(inscriptionsValidees)}">
+            <td colspan="9" class="empty-row">Aucune inscription validée pour le moment.</td>
+          </tr>
+          <tr th:each="i : ${inscriptionsValidees}">
+            <td style="color:var(--muted);font-size:0.78rem;" th:text="${i.id}"></td>
+            <td>
+              <div class="sname"  th:text="${i.etudiant.prenom + ' ' + i.etudiant.nom}">—</div>
+              <div class="semail" th:text="${i.etudiant.email}">—</div>
+            </td>
+            <td style="color:var(--muted);" th:text="${#strings.abbreviate(i.cours.titre, 26)}">—</td>
+            <td style="font-size:0.77rem;color:var(--muted);" th:text="${i.dateInscription}">—</td>
+            <td th:text="${i.modePaiement != null ? i.modePaiement.label : '—'}">—</td>
+            <td style="font-weight:600;" th:text="${i.montant != null ? i.montant + ' MAD' : '—'}">—</td>
+            <td style="font-size:0.75rem;color:var(--muted);" th:text="${i.referencePaiement != null ? i.referencePaiement : '—'}">—</td>
+            <td>
+              <span th:class="${i.paiementEffectue} ? 'badge-paid' : 'badge-pending'"
+                    th:text="${i.paiementEffectue} ? 'Payé' : 'En attente'">—</span>
+            </td>
+            <td>
+              <form th:action="@{/paiements/enregistrer}" method="post" class="pay-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="inscriptionId" th:value="${i.id}"/>
+                <select name="modePaiement" class="pay-select">
+                  <option value="">Mode</option>
+                  <option value="ESPECES"        th:selected="${i.modePaiement != null and i.modePaiement.name() == 'ESPECES'}">Espèces</option>
+                  <option value="CARTE_BANCAIRE" th:selected="${i.modePaiement != null and i.modePaiement.name() == 'CARTE_BANCAIRE'}">Carte</option>
+                  <option value="VIREMENT"       th:selected="${i.modePaiement != null and i.modePaiement.name() == 'VIREMENT'}">Virement</option>
+                  <option value="CHEQUE"         th:selected="${i.modePaiement != null and i.modePaiement.name() == 'CHEQUE'}">Chèque</option>
+                </select>
+                <input class="pay-input" type="number" name="montant"
+                       placeholder="Montant" th:value="${i.montant}" min="0" step="100"/>
+                <input class="pay-input" type="text" name="referencePaiement"
+                       th:value="${i.referencePaiement}" placeholder="Référence" style="width:80px;"/>
+                <button type="submit" class="pay-btn">Sauver</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

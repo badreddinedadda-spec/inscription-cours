@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Connexion — HighTech EDU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:   #1B3A6B;
+      --blue-l: #EEF3FF;
+      --blue-m: #2d5299;
+      --white:  #FFFFFF;
+      --bg:     #F7F9FC;
+      --border: #E2E8F0;
+      --text:   #0F172A;
+      --muted:  #64748B;
+      --soft:   #94A3B8;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 14px; width: 100%; max-width: 400px;
+      padding: 2.5rem 2.25rem;
+      box-shadow: 0 4px 24px rgba(15,23,42,0.06);
+    }
+
+    /* Logo */
+    .logo { display: flex; align-items: baseline; gap: 7px; text-decoration: none; margin-bottom: 2.25rem; }
+    .logo-name { font-family: 'Instrument Serif', serif; font-size: 1.1rem; color: var(--blue); }
+    .logo-sep  { color: var(--border); }
+    .logo-sub  { font-size: 0.68rem; color: var(--soft); letter-spacing: 0.3px; }
+
+    /* Titre */
+    h1 { font-family: 'Instrument Serif', serif; font-size: 1.75rem; color: var(--text); letter-spacing: -0.3px; margin-bottom: 0.3rem; }
+    .sub { font-size: 0.84rem; color: var(--muted); font-weight: 300; margin-bottom: 1.75rem; }
+
+    /* Alertes */
+    .alert { border-radius: 7px; padding: 0.65rem 0.9rem; font-size: 0.82rem; margin-bottom: 1.25rem; }
+    .alert-err { background: #FFF5F5; border: 1px solid #FECACA; color: #991B1B; }
+    .alert-ok  { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; }
+
+    /* Champs */
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 0.77rem; font-weight: 500; color: var(--muted); margin-bottom: 0.3rem; }
+    .field input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); padding: 0.65rem 0.9rem; border-radius: 7px;
+      font-size: 0.9rem; outline: none; font-family: inherit; transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(27,58,107,0.08); background: var(--white); }
+    .field input::placeholder { color: var(--soft); }
+
+    .forgot { display: block; text-align: right; font-size: 0.76rem; color: var(--muted); text-decoration: none; margin-top: -0.6rem; margin-bottom: 1.1rem; }
+    .forgot:hover { color: var(--blue); }
+
+    .btn {
+      width: 100%; background: var(--blue); color: var(--white);
+      border: none; padding: 0.75rem; border-radius: 8px;
+      font-size: 0.92rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: background 0.15s;
+    }
+    .btn:hover { background: var(--blue-m); }
+
+    .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .divider span { font-size: 0.73rem; color: var(--soft); }
+
+    .back {
+      display: block; text-align: center; padding: 0.6rem;
+      border: 1px solid var(--border); border-radius: 7px;
+      color: var(--muted); text-decoration: none; font-size: 0.83rem;
+      font-weight: 500; transition: all 0.15s;
+    }
+    .back:hover { border-color: var(--blue); color: var(--blue); }
+
+    .note { text-align: center; font-size: 0.72rem; color: var(--soft); margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <a class="logo" th:href="@{/}" href="/">
+    <span class="logo-name">HighTech EDU</span>
+    <span class="logo-sep">·</span>
+    <span class="logo-sub">Administration</span>
+  </a>
+
+  <h1>Connexion</h1>
+  <p class="sub">Accès réservé à l'équipe pédagogique.</p>
+
+  <div class="alert alert-err" th:if="${param.error}">
+    Identifiants incorrects. Vérifiez votre email et mot de passe.
+  </div>
+  <div class="alert alert-ok" th:if="${param.logout}">
+    Vous avez été déconnecté avec succès.
+  </div>
+  <div class="alert alert-ok" th:if="${param.reset}">
+    Mot de passe réinitialisé. Vous pouvez vous connecter.
+  </div>
+
+  <form th:action="@{/login}" action="/login" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" name="email" placeholder="Adresse e-mail" required autofocus autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" name="password" placeholder="Mot de passe" required autocomplete="current-password"/>
+    </div>
+    <a class="forgot" th:href="@{/forgot-password}" href="/forgot-password">Mot de passe oublié ?</a>
+    <button class="btn" type="submit">Se connecter</button>
+  </form>
+
+  <div class="divider"><span>ou</span></div>
+  <a class="back" th:href="@{/}" href="/">Retour à l'accueil</a>
+  <p class="note">HighTech EDU © 2025</p>
+</div>
+</body>
+</html>
