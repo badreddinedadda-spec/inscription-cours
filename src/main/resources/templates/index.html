@@ -373,10 +373,6 @@
 </div>
 
 <script>
-
-    window.openModal = function() { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-    window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; document.getElementById('successBlock').classList.remove('show'); document.getElementById('formBlock').style.display=''; document.getElementById('modalFoot').style.display=''; }
-    window.submitForm = function() { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
   function toggleNotif() {
     document.getElementById('notifDropdown').classList.toggle('open');
   }
