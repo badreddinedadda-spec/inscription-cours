@@ -481,7 +481,7 @@
       <div class="ok-box">✓</div>
       <h3>Candidature envoyée !</h3>
       <p>Votre dossier a été reçu. Notre équipe vous contactera sous <strong>48h</strong>.</p>
-      <button class="btn-done" onclick="closeModal()">Fermerprog</button>
+      <button class="btn-done" onclick="closeModal()">Fermer</button>
     </div>
 
     <!-- Formulaire -->
@@ -489,7 +489,7 @@
       <div class="alert-err" th:if="${param.error}">Une erreur s'est produite. Vérifiez les champs.</div>
       <div class="alert-err" th:if="${error}" th:text="${error}"></div>
 
-      <form id="inscForm" th:action="@{/s-inscrire}" method="post">
+      <form id="inscForm" th:action="@{/s-inscrire}" action="/s-inscrire" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <div class="m-section">
@@ -561,16 +561,17 @@
             </select>
           </div>
           <div class="prog-opts">
-            <div th:each="c : ${coursList}" style="display:contents">
+            <th:block th:each="c : ${coursList}">
               <input type="radio" class="prog-r" name="coursId"
                      th:id="'p' + ${c.id}" th:value="${c.id}" required/>
               <label th:for="'p' + ${c.id}">
                 <span class="pname" th:text="${c.titre}">Programme</span>
                 <span class="pdur" th:text="${c.duree} + 'h'">120h</span>
               </label>
-            </div>
+            </th:block>
           </div>
         </div>
+
         <div class="m-section">
           <div class="m-label">Message (optionnel)</div>
           <div class="field">
@@ -588,15 +589,17 @@
 </div>
 
 <script>
-  window.openModal = function() { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-  window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; document.getElementById('successBlock').classList.remove('show'); document.getElementById('formBlock').style.display=''; document.getElementById('modalFoot').style.display=''; }
-  window.submitForm = function() { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') window.closeModal(); });
+  function openModal()  { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeModal() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; document.getElementById('successBlock').classList.remove('show'); document.getElementById('formBlock').style.display=''; document.getElementById('modalFoot').style.display=''; }
+  function handleClick(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+  function submitForm()   { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
   document.addEventListener('DOMContentLoaded', ()=>{
     const p=new URLSearchParams(window.location.search);
     const sv = p.get('success');
-    if(sv==='true'||sv==='1'){ window.openModal(); document.getElementById('successBlock').classList.add('show'); document.getElementById('formBlock').style.display='none'; document.getElementById('modalFoot').style.display='none'; }
-    if(p.get('error')) window.openModal();
+    if(sv==='true'||sv==='1'){ openModal(); document.getElementById('successBlock').classList.add('show'); document.getElementById('formBlock').style.display='none'; document.getElementById('modalFoot').style.display='none'; }
+    if(p.get('error')) openModal();
+    if(p.get('error')) openModal();
   });
 </script>
 </body>
