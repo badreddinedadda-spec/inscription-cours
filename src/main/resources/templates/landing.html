@@ -481,7 +481,7 @@
       <div class="ok-box">✓</div>
       <h3>Candidature envoyée !</h3>
       <p>Votre dossier a été reçu. Notre équipe vous contactera sous <strong>48h</strong>.</p>
-      <button class="btn-done" onclick="closeModal()">Fermer</button>
+      <button class="btn-done" onclick="closeModal()">Fermerprog</button>
     </div>
 
     <!-- Formulaire -->
@@ -570,6 +570,7 @@
               </label>
             </div>
           </div>
+        </div>
         <div class="m-section">
           <div class="m-label">Message (optionnel)</div>
           <div class="field">
@@ -587,7 +588,6 @@
 </div>
 
 <script>
-  <script>
   window.openModal = function() { document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
   window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; document.getElementById('successBlock').classList.remove('show'); document.getElementById('formBlock').style.display=''; document.getElementById('modalFoot').style.display=''; }
   window.submitForm = function() { const f=document.getElementById('inscForm'); if(!f.checkValidity()){f.reportValidity();return;} f.submit(); }
