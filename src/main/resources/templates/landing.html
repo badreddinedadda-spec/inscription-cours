@@ -489,7 +489,7 @@
       <div class="alert-err" th:if="${param.error}">Une erreur s'est produite. Vérifiez les champs.</div>
       <div class="alert-err" th:if="${error}" th:text="${error}"></div>
 
-      <form id="inscForm" th:action="@{/s-inscrire}" action="/s-inscrire" method="post">
+      <form id="inscForm" th:action="@{/s-inscrire}" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <div class="m-section">
