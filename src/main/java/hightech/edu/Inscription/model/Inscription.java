@@ -28,7 +28,7 @@ public class Inscription {
     @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'EN_ATTENTE'")
     private InscriptionStatut statut = InscriptionStatut.EN_ATTENTE;
 
-    // ── Formulaire public ───────────────────────────────────
+    //Formulaire public
     @Column(name = "souhait_inscription", length = 100)
     private String souhaitInscription;
 
@@ -47,7 +47,7 @@ public class Inscription {
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
-    // ── Paiement ────────────────────────────────────────────
+    //Paiement
     @Enumerated(EnumType.STRING)
     @Column(name = "mode_paiement", length = 30)
     private ModePaiement modePaiement;

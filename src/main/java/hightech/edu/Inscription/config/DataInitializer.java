@@ -25,7 +25,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRole("ADMIN");
             admin.setPoste("Directeur pédagogique");
             adminUserRepository.save(admin);
-            System.out.println("✅ Compte admin créé : admin@hightech.edu / admin123");
+            System.out.println("Compte admin créé : admin@hightech.edu / admin123");
         }
     }
 }

@@ -11,9 +11,8 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    /**
-     * Envoie un email d'acceptation à l'étudiant.
-     */
+    //Envoie un email d'acceptation à l'étudiant.
+
     public void envoyerAcceptation(String emailEtudiant, String prenomEtudiant, String titreCours) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
@@ -31,15 +30,14 @@ public class EmailService {
             );
             mailSender.send(msg);
         } catch (Exception e) {
-            // Email non bloquant : si SMTP non configuré, on log simplement
+            // Email non bloquant "si SMTP non configuré, on log simplement"
             System.err.println("[EmailService] Impossible d'envoyer l'email d'acceptation à "
                 + emailEtudiant + " : " + e.getMessage());
         }
     }
 
-    /**
-     * Envoie un email de refus à l'étudiant.
-     */
+    //Envoie un email de refus à l'étudiant
+
     public void envoyerRefus(String emailEtudiant, String prenomEtudiant, String titreCours) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();

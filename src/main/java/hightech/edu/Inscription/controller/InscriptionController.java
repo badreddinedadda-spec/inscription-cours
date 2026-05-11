@@ -27,7 +27,7 @@ public class InscriptionController {
     private final EtudiantService etudiantService;
     private final CoursService coursService;
 
-    // ─── Admin : liste complète ────────────────────────────────────────────
+    //Admin_liste_complète
     @GetMapping("/inscriptions")
     public String liste(Model model) {
         model.addAttribute("inscriptions", inscriptionService.findAll());
@@ -36,7 +36,7 @@ public class InscriptionController {
         return "inscriptions/liste";
     }
 
-    // ─── Admin : demandes en attente ───────────────────────────────────────
+    //Admin_demandes_en_attente
     @GetMapping("/inscriptions/en-attente")
     public String enAttente(Model model) {
         model.addAttribute("inscriptions", inscriptionService.findByStatut(InscriptionStatut.EN_ATTENTE));
@@ -45,7 +45,7 @@ public class InscriptionController {
         return "inscriptions/liste";
     }
 
-    // ─── Admin : formulaire ────────────────────────────────────────────────
+    //Admin_formulaire
     @GetMapping("/inscriptions/nouveau")
     public String formulaireAjout(Model model, Authentication auth) {
         model.addAttribute("inscription", new Inscription());
@@ -161,7 +161,7 @@ public class InscriptionController {
             @RequestParam(required = false) String message,
             RedirectAttributes redirectAttributes) {
 
-        // ── Validation basique ───────────────────────────────────────────────
+        //Validation_basique
         if (nom == null || nom.isBlank() || prenom == null || prenom.isBlank()
                 || email == null || email.isBlank() || coursId == null) {
             redirectAttributes.addFlashAttribute("error",
@@ -169,7 +169,7 @@ public class InscriptionController {
             return "redirect:/s-inscrire";
         }
 
-        // Créer ou retrouver l'étudiant
+        // Créer_ou_retrouver_l'étudiant
         Etudiant etudiant = etudiantService.findByEmail(email).orElseGet(() -> {
             Etudiant e = new Etudiant();
             e.setCivilite(civilite);
@@ -183,20 +183,20 @@ public class InscriptionController {
             return etudiantService.save(e);
         });
 
-        // Mettre à jour les infos de contact si étudiant existant
+        // Mettre_à_jour_les_infos_de_contact_si_étudiant existant
         if (telephone != null) etudiant.setTelephone(telephone);
         if (whatsapp  != null) etudiant.setWhatsapp(whatsapp);
         if (pays      != null) etudiant.setPays(pays);
         if (ville     != null) etudiant.setVille(ville);
         etudiantService.save(etudiant);
 
-        // Vérifier doublon
+        // Vérifier_doublon
         if (inscriptionService.existsByEtudiantIdAndCoursId(etudiant.getId(), coursId)) {
             redirectAttributes.addFlashAttribute("error", "Vous avez déjà une demande pour ce cours.");
             return "redirect:/";
         }
 
-        // Créer demande EN_ATTENTE
+        // Créer_demande_EN_ATTENTE
         Inscription inscription = new Inscription();
         inscription.setEtudiant(etudiant);
         inscription.setCours(coursService.findById(coursId).orElseThrow());
@@ -210,7 +210,7 @@ public class InscriptionController {
         inscription.setMessage(message);
         inscriptionService.save(inscription);
 
-        // Redirect to landing page which shows the success modal (white/blue style)
+        // Redirect to accueil which shows the success modal (white/blue style)
         return "redirect:/?success=1";
     }
 }

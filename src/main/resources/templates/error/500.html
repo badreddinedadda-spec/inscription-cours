@@ -24,10 +24,10 @@
   <p class="msg">Erreur serveur</p>
   <p class="sub" th:text="${message != null ? message : 'Une erreur inattendue s\'est produite. Veuillez réessayer.'}">Une erreur inattendue s'est produite.</p>
   <div class="actions">
-    <!-- Admin context: back to dashboard -->
+    <!-- Admin context: back to table_de_boed-->
     <a th:if="${isAdmin}" th:href="@{/dashboard}" class="btn-back">← Tableau de bord</a>
     <a th:if="${isAdmin}" th:href="@{/inscriptions}" class="btn-alt">Inscriptions</a>
-    <!-- Public context: back to landing -->
+    <!-- Public context: back to Accueil -->
     <a th:unless="${isAdmin}" href="/" class="btn-back">← Retour à l'accueil</a>
   </div>
 </div>

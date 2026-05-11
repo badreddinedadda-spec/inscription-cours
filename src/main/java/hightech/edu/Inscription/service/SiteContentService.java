@@ -16,7 +16,7 @@ public class SiteContentService {
 
     private final SiteContentRepository repo;
 
-    /** Valeurs par défaut — insérées au 1er démarrage seulement */
+    //Valeurs par défaut — insérées au 1er démarrage seulement
     private static final Map<String, String[]> DEFAULTS = new LinkedHashMap<>();
     static {
         // cle -> [valeur, labelAdmin]
@@ -46,7 +46,7 @@ public class SiteContentService {
         DEFAULTS.put("footer_copyright",    new String[]{"© 2025 — Tous droits réservés", "Footer — Texte copyright"});
     }
 
-    /** Insère les valeurs par défaut si la table est vide */
+    // Insère les valeurs par défaut si la table est vide
     @PostConstruct
     public void initialiserDefauts() {
         if (repo.count() == 0) {
@@ -61,14 +61,14 @@ public class SiteContentService {
         return repo.findAll();
     }
 
-    /** Retourne une map cle→valeur pour injection dans le modèle Thymeleaf */
+    //Retourne une map cle→valeur pour injection dans le modèle Thymeleaf
     public Map<String, String> asMap() {
         Map<String, String> map = new LinkedHashMap<>();
         repo.findAll().forEach(sc -> map.put(sc.getCle(), sc.getValeur()));
         return map;
     }
 
-    /** Sauvegarde une liste de modifications (venant du formulaire admin) */
+    // Sauvegarde une liste de modifications (venant du formulaire admin)
     public void sauvegarderTout(Map<String, String> valeurs) {
         valeurs.forEach((cle, valeur) -> {
             repo.findById(cle).ifPresent(sc -> {

@@ -29,7 +29,7 @@ public class AdminUserService implements UserDetailsService {
         return adminUserRepository.findByEmail(email).orElse(null);
     }
 
-    /** Sauvegarde (création ou mise à jour) d'un AdminUser */
+    //Sauvegarde (création ou mise à jour) d'un AdminUser
     public AdminUser save(AdminUser admin) {
         return adminUserRepository.save(admin);
     }

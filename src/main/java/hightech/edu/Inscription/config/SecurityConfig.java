@@ -13,18 +13,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 
-/**
- * Configuration de sécurité Spring Security.
- *
- * ACCÈS ADMIN :
- *   L'URL /login n'est PAS exposée sur la page publique (landing).
- *   L'administrateur doit naviguer manuellement vers :
- *     /portail-admin-ht2025
- *   Cette URL redirige vers le formulaire de connexion.
- *   Aucun lien vers cette URL n'est présent dans le HTML public.
- *   Cela protège l'interface d'administration contre les bots et
- *   les utilisateurs non informés.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

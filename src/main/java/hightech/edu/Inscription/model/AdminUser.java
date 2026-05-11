@@ -22,16 +22,16 @@ public class AdminUser {
     private String email;
 
     @Column(nullable = false)
-    private String password;  // BCrypt encoded
+    private String password;
 
     @Column(length = 20)
-    private String role = "ADMIN";  // ADMIN or ETUDIANT
+    private String role = "ADMIN";
 
     @Column(name = "photo_url", length = 255)
     private String photoUrl;
 
     @Column(length = 100)
-    private String poste;  // "Directeur pédagogique", etc.
+    private String poste;
 
     public String getNomComplet() {
         return prenom + " " + nom;

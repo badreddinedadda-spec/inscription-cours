@@ -13,13 +13,13 @@ public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;
 
-    // Step 1 — Show "forgot password" form
+    //A."forgot password" form i USED MAILTrap for it
     @GetMapping("/forgot-password")
     public String forgotPasswordForm() {
         return "forgot-password";
     }
 
-    // Step 2 — Submit username, send email
+    // B.Submit username, send email
     @PostMapping("/forgot-password")
     public String forgotPasswordSubmit(
             @RequestParam String email,
@@ -35,7 +35,7 @@ public class PasswordResetController {
         return "redirect:/forgot-password";
     }
 
-    // Step 3 — Show new password form (token in URL)
+    // C.Show new password form (token in URL)
     @GetMapping("/reset-password")
     public String resetPasswordForm(@RequestParam String token, Model model) {
         boolean valid = passwordResetService.validateToken(token).isPresent();
@@ -44,7 +44,7 @@ public class PasswordResetController {
         return "reset-password";
     }
 
-    // Step 4 — Submit new password
+    // D.Submit new password
     @PostMapping("/reset-password")
     public String resetPasswordSubmit(
             @RequestParam String token,

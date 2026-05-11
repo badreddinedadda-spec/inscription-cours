@@ -150,7 +150,7 @@ public class HomeController {
         return "redirect:/parametres";
     }
 
-    /* ─── Mini-CMS : éditeur de la page d'accueil ─── */
+    /*Mini-CMS : éditeur_de_la_page_d'accueil*/
     @GetMapping("/cms")
     public String cmsEditor(Model model, Authentication auth) {
         model.addAttribute("adminUser",  getAdmin(auth));
