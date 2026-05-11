@@ -17,7 +17,7 @@ public class Etudiant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //Id
+    // ── Identité ───────────────────────────────────────────────────────────
     @Column(length = 10)
     private String civilite;           // M. / Mme
 
@@ -39,7 +39,7 @@ public class Etudiant {
     @Column(name = "date_naissance")
     private LocalDate dateNaissance;
 
-    //Contact
+    // ── Contact ────────────────────────────────────────────────────────────
     @Column(length = 30)
     private String telephone;
 
@@ -52,7 +52,7 @@ public class Etudiant {
     @Column(length = 100)
     private String ville;
 
-    //Relation
+    // ── Relation ───────────────────────────────────────────────────────────
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Inscription> inscriptions;
 }

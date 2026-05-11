@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Détecte si la requête vient d'une URL admin (non publique).
+     * Permet d'afficher "← Tableau de bord" au lieu de "← Retour à l'accueil"
+     * sur les pages d'erreur quand un administrateur déclenche une erreur.
+     */
     private boolean isAdminRequest(HttpServletRequest request, Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         String uri = request.getRequestURI();

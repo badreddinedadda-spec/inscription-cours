@@ -32,8 +32,10 @@ public class LoginController {
         return "redirect:/login";
     }
 
-     //Spring Security intercepte le POST automatiquement.
-
+    /**
+     * Page de connexion standard (formulaire email + mot de passe).
+     * Spring Security intercepte le POST automatiquement.
+     */
     @GetMapping("/login")
     public String loginPage() {
         return "login";

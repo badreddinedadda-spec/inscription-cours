@@ -64,7 +64,7 @@ public class ExportController {
         return new Cell().add(new Paragraph(text).setFont(font));
     }
 
-    //ÉTUDIANTS_Excel
+    // ── ÉTUDIANTS — Excel ─────────────────────────────────────────────
 
     @GetMapping("/etudiants/excel")
     public void exportEtudiantsExcel(
@@ -111,7 +111,7 @@ public class ExportController {
         }
     }
 
-    //ÉTUDIANTS8PDF
+    // ── ÉTUDIANTS — PDF ───────────────────────────────────────────────
 
     @GetMapping("/etudiants/pdf")
     public void exportEtudiantsPdf(
@@ -153,7 +153,7 @@ public class ExportController {
         doc.close();
     }
 
-    //COURS_Excel
+    // ── COURS — Excel ─────────────────────────────────────────────────
 
     @GetMapping("/cours/excel")
     public void exportCoursExcel(
@@ -200,7 +200,7 @@ public class ExportController {
         }
     }
 
-    //COURS_PDF
+    // ── COURS — PDF ───────────────────────────────────────────────────
 
     @GetMapping("/cours/pdf")
     public void exportCoursPdf(
