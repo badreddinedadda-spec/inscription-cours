@@ -91,7 +91,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>inscription-cours</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
