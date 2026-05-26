@@ -1,5 +1,4 @@
 package hightech.edu.Inscription.model;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -7,10 +6,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "cours")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @ToString(exclude = "inscriptions")
 @EqualsAndHashCode(exclude = "inscriptions")
 public class Cours {
@@ -20,13 +17,25 @@ public class Cours {
     private Long id;
 
     @NotBlank(message = "Le titre est obligatoire")
-    @Size(min = 2, max = 200, message = "Le titre doit contenir entre 2 et 200 caractères")
+    @Size(min = 2, max = 200)
     @Column(nullable = false)
     private String titre;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Min(value = 1, message = "La durée doit être au moins 1 heure")
+    @Column(columnDefinition = "TEXT")
+    private String objectifs;
+
+    @Column(columnDefinition = "TEXT")
+    private String prerequis;
+
+    @Column(columnDefinition = "TEXT")
+    private String programme;
+
+    private String niveau;
+
+    @Min(value = 1)
     @Column(nullable = false)
     private int duree;
 
