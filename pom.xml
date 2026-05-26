@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>hightech.edu</groupId>
-	<artifactId>Inscription</artifactId>
+	<artifactId>_Inscription_Cours</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Inscription</name>
 	<description>Projet d&apos;inscription des étudiants</description>
@@ -91,6 +91,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>inscription-cours</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
