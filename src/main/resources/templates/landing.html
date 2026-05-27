@@ -561,14 +561,48 @@
           <div class="prog-opts">
             <th:block th:each="c : ${coursList}">
               <input type="radio" class="prog-r" name="coursId"
-                     th:id="'p' + ${c.id}" th:value="${c.id}" required/>
+                     th:id="'p' + ${c.id}" th:value="${c.id}"
+                     th:data-titre="${c.titre}"
+                     th:data-enseignant="${c.enseignant}"
+                     th:data-duree="${c.duree}"
+                     th:data-niveau="${c.niveau}"
+                     th:data-description="${c.description}"
+                     th:data-objectifs="${c.objectifs}"
+                     th:data-prerequis="${c.prerequis}"
+                     th:data-programme="${c.programme}"
+                     onchange="showSyllabus(this)" required/>
               <label th:for="'p' + ${c.id}">
                 <span class="pname" th:text="${c.titre}">Programme</span>
                 <span class="pdur" th:text="${c.duree} + 'h'">120h</span>
               </label>
             </th:block>
           </div>
-        </div>
+          <!-- Panneau Syllabus -->
+          <div id="syllabusPanel" style="display:none; margin-top:1rem; background:#EEF3FF; border:1px solid #c7d9f8; border-radius:10px; padding:1rem;">
+            <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#1B3A6B; margin-bottom:0.75rem;">📋 Détails du cours sélectionné</div>
+            <div style="display:flex; gap:1rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+              <span style="font-size:0.78rem; color:#1B3A6B; font-weight:600;" id="syl-titre"></span>
+              <span style="font-size:0.72rem; background:#1B3A6B; color:#fff; padding:0.15rem 0.6rem; border-radius:20px;" id="syl-duree"></span>
+              <span style="font-size:0.72rem; background:#E0E7FF; color:#3730A3; padding:0.15rem 0.6rem; border-radius:20px;" id="syl-niveau"></span>
+            </div>
+            <div style="font-size:0.78rem; color:#475569; margin-bottom:0.5rem;"><strong>👨‍🏫 Enseignant :</strong> <span id="syl-enseignant"></span></div>
+            <div id="syl-desc-block" style="margin-bottom:0.5rem;">
+              <div style="font-size:0.72rem; font-weight:600; color:#1B3A6B;">📝 Description</div>
+              <div style="font-size:0.78rem; color:#475569; margin-top:0.25rem;" id="syl-description"></div>
+            </div>
+            <div id="syl-obj-block" style="margin-bottom:0.5rem;">
+              <div style="font-size:0.72rem; font-weight:600; color:#1B3A6B;">🎯 Objectifs</div>
+              <div style="font-size:0.78rem; color:#475569; margin-top:0.25rem; white-space:pre-line;" id="syl-objectifs"></div>
+            </div>
+            <div id="syl-pre-block" style="margin-bottom:0.5rem;">
+              <div style="font-size:0.72rem; font-weight:600; color:#1B3A6B;">✅ Prérequis</div>
+              <div style="font-size:0.78rem; color:#475569; margin-top:0.25rem; white-space:pre-line;" id="syl-prerequis"></div>
+            </div>
+            <div id="syl-prog-block">
+              <div style="font-size:0.72rem; font-weight:600; color:#1B3A6B;">📚 Programme</div>
+              <div style="font-size:0.78rem; color:#475569; margin-top:0.25rem; white-space:pre-line;" id="syl-programme"></div>
+            </div>
+          </div>
 
         <div class="m-section">
           <div class="m-label">Message (optionnel)</div>
@@ -599,6 +633,18 @@
     if(p.get('error')) openModal();
     if(p.get('error')) openModal();
   });
+  function showSyllabus(input) {
+  const panel = document.getElementById('syllabusPanel');
+  panel.style.display = 'block';
+  document.getElementById('syl-titre').textContent = input.dataset.titre || '';
+  document.getElementById('syl-duree').textContent = input.dataset.duree + 'h';
+  document.getElementById('syl-niveau').textContent = input.dataset.niveau || 'Tous niveaux';
+  document.getElementById('syl-enseignant').textContent = input.dataset.enseignant || '';
+  document.getElementById('syl-description').textContent = input.dataset.description || '—';
+  document.getElementById('syl-objectifs').textContent = input.dataset.objectifs || '—';
+  document.getElementById('syl-prerequis').textContent = input.dataset.prerequis || '—';
+  document.getElementById('syl-programme').textContent = input.dataset.programme || '—';
+}
 </script>
 </body>
 </html>
