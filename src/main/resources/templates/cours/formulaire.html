@@ -5,6 +5,33 @@
   <meta charset="UTF-8"/>
   <title>Cours — EduManager</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <style>
+    .form-card { max-width: 800px; }
+    .form-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #1B3A6B;
+      border-bottom: 2px solid #EEF3FF; padding-bottom: 0.5rem;
+      margin: 1.5rem 0 1rem;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group label { font-size: 0.8rem; font-weight: 500; color: #64748B; display: block; margin-bottom: 0.3rem; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 0.6rem 0.85rem;
+      border: 1.5px solid #E2E8F0; border-radius: 7px;
+      font-size: 0.85rem; font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none; border-color: #1B3A6B;
+      box-shadow: 0 0 0 3px rgba(27,58,107,0.08);
+    }
+    .form-group textarea { min-height: 100px; resize: vertical; }
+    .badge-info {
+      background: #EEF3FF; color: #1B3A6B;
+      font-size: 0.75rem; padding: 0.25rem 0.75rem;
+      border-radius: 20px; font-weight: 500;
+    }
+  </style>
 </head>
 <body>
 <nav>
@@ -19,31 +46,71 @@
 </nav>
 <div class="container">
   <div class="page-header">
-    <h1 th:text="${cours.id == null} ? 'Nouveau cours' : 'Modifier cours'">Cours</h1>
+    <h1 th:text="${cours.id == null} ? 'Nouveau cours' : 'Modifier le cours'">Cours</h1>
     <a th:href="@{/cours}" class="btn btn-secondary">← Retour</a>
   </div>
   <div class="form-card">
     <form th:action="@{/cours/sauvegarder}" th:object="${cours}" method="post">
       <input type="hidden" th:field="*{id}"/>
+
+      <!-- INFORMATIONS GENERALES -->
+      <div class="form-section-title">Informations générales</div>
+
       <div class="form-group">
-        <label>Titre *</label>
-        <input type="text" th:field="*{titre}" th:class="${#fields.hasErrors('titre')} ? 'input-error' : ''" placeholder="Titre du cours"/>
+        <label>Titre du cours *</label>
+        <input type="text" th:field="*{titre}" placeholder="Ex: Génie Logiciel et DevOps"/>
         <span class="error-msg" th:if="${#fields.hasErrors('titre')}" th:errors="*{titre}"></span>
       </div>
-      <div class="form-group">
-        <label>Enseignant *</label>
-        <input type="text" th:field="*{enseignant}" th:class="${#fields.hasErrors('enseignant')} ? 'input-error' : ''" placeholder="Enseignant"/>
-        <span class="error-msg" th:if="${#fields.hasErrors('enseignant')}" th:errors="*{enseignant}"></span>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Enseignant *</label>
+          <input type="text" th:field="*{enseignant}" placeholder="Nom de l'enseignant"/>
+          <span class="error-msg" th:if="${#fields.hasErrors('enseignant')}" th:errors="*{enseignant}"></span>
+        </div>
+        <div class="form-group">
+          <label>Durée (heures) *</label>
+          <input type="number" th:field="*{duree}" min="1" placeholder="Ex: 40"/>
+          <span class="error-msg" th:if="${#fields.hasErrors('duree')}" th:errors="*{duree}"></span>
+        </div>
       </div>
+
       <div class="form-group">
-        <label>Durée (heures) *</label>
-        <input type="number" th:field="*{duree}" th:class="${#fields.hasErrors('duree')} ? 'input-error' : ''" min="1" placeholder="Durée en heures"/>
-        <span class="error-msg" th:if="${#fields.hasErrors('duree')}" th:errors="*{duree}"></span>
+        <label>Niveau</label>
+        <select th:field="*{niveau}">
+          <option value="">— Sélectionner un niveau —</option>
+          <option value="Bac+2">Bac+2</option>
+          <option value="Bac+3">Bac+3</option>
+          <option value="Bac+5">Bac+5 (Master)</option>
+          <option value="Formation continue">Formation continue</option>
+          <option value="Tous niveaux">Tous niveaux</option>
+        </select>
       </div>
+
+      <!-- SYLLABUS -->
+      <div class="form-section-title">Syllabus du cours</div>
+
       <div class="form-group">
-        <label>Description</label>
-        <textarea th:field="*{description}" placeholder="Description"></textarea>
+        <label>Description générale</label>
+        <textarea th:field="*{description}" placeholder="Présentation générale du cours..."></textarea>
       </div>
+
+      <div class="form-group">
+        <label>Objectifs pédagogiques</label>
+        <textarea th:field="*{objectifs}" placeholder="À la fin de ce cours, l'étudiant sera capable de..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Prérequis</label>
+        <textarea th:field="*{prerequis}" placeholder="Connaissances requises avant d'intégrer ce cours..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Programme détaillé (Syllabus)</label>
+        <textarea th:field="*{programme}" rows="6"
+                  placeholder="Module 1: Introduction&#10;Module 2: ...&#10;Module 3: ..."></textarea>
+      </div>
+
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">Sauvegarder</button>
         <a th:href="@{/cours}" class="btn btn-secondary">Annuler</a>
