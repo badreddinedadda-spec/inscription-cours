@@ -25,6 +25,7 @@
   <div class="form-card">
     <form th:action="@{/etudiants/sauvegarder}" th:object="${etudiant}" method="post">
       <input type="hidden" th:field="*{id}"/>
+
       <div style="display:grid;grid-template-columns:110px 1fr 1fr;gap:1rem;">
         <div class="form-group">
           <label>Civilité</label>
