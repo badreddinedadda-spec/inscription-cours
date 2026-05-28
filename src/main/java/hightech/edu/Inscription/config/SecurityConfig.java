@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new XorCsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/forgot-password", "/reset-password", "/s-inscrire", "/s-inscrire/**")
                 )
             .authenticationProvider(authProvider())
             .authorizeHttpRequests(auth -> auth
