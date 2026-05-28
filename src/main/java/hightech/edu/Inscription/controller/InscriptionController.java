@@ -212,5 +212,101 @@ public class InscriptionController {
         // Redirect to landing page which shows the success modal
         Inscription saved = inscriptionService.save(inscription);
         return "redirect:/confirmation/" + saved.getId();
+        // ─── PUBLIC : page de confirmation après inscription ───────────────
+        @GetMapping("/confirmation/{id}")
+        public String confirmation(@PathVariable Long id, Model model) {
+            Inscription inscription = inscriptionService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
+            model.addAttribute("inscription", inscription);
+            return "inscriptions/confirmation";
+        }
+
+// ─── PUBLIC : télécharger le reçu PDF ──────────────────────────────
+        @GetMapping("/confirmation/{id}/pdf")
+        public void telechargerPdf(@PathVariable Long id,
+                jakarta.servlet.http.HttpServletResponse response) throws Exception {
+            Inscription inscription = inscriptionService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
+
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=recu-inscription-" + id + ".pdf");
+
+            // Génération PDF avec iText
+            com.itextpdf.kernel.pdf.PdfWriter writer =
+                    new com.itextpdf.kernel.pdf.PdfWriter(response.getOutputStream());
+            com.itextpdf.kernel.pdf.PdfDocument pdf =
+                    new com.itextpdf.kernel.pdf.PdfDocument(writer);
+            com.itextpdf.layout.Document document =
+                    new com.itextpdf.layout.Document(pdf);
+
+            // Titre
+            document.add(new com.itextpdf.layout.element.Paragraph("HIGHTECH EDU")
+                    .setFontSize(20).setBold()
+                    .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER));
+
+            document.add(new com.itextpdf.layout.element.Paragraph("Reçu de candidature")
+                    .setFontSize(14)
+                    .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(" "));
+
+            // Numéro dossier
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "N° Dossier : HTEC-" + String.format("%04d", id))
+                    .setFontSize(12).setBold());
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Date : " + inscription.getDateInscription())
+                    .setFontSize(11));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(" "));
+
+            // Infos étudiant
+            document.add(new com.itextpdf.layout.element.Paragraph("INFORMATIONS ÉTUDIANT")
+                    .setFontSize(12).setBold());
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Nom complet : " + inscription.getEtudiant().getPrenom()
+                            + " " + inscription.getEtudiant().getNom())
+                    .setFontSize(11));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Email : " + inscription.getEtudiant().getEmail())
+                    .setFontSize(11));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(" "));
+
+            // Infos cours
+            document.add(new com.itextpdf.layout.element.Paragraph("PROGRAMME CHOISI")
+                    .setFontSize(12).setBold());
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Cours : " + inscription.getCours().getTitre())
+                    .setFontSize(11));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Enseignant : " + inscription.getCours().getEnseignant())
+                    .setFontSize(11));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Durée : " + inscription.getCours().getDuree() + " heures")
+                    .setFontSize(11));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(" "));
+
+            // Statut
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Statut : EN ATTENTE DE VALIDATION")
+                    .setFontSize(12).setBold());
+
+            document.add(new com.itextpdf.layout.element.Paragraph(" "));
+
+            document.add(new com.itextpdf.layout.element.Paragraph(
+                    "Notre équipe vous contactera sous 48h.")
+                    .setFontSize(11));
+
+            document.close();
+        }
     }
 }
