@@ -208,9 +208,9 @@ public class InscriptionController {
         inscription.setAnneeBac(anneeBac);
         inscription.setDoubleDiplomation(doubleDiplomation);
         inscription.setMessage(message);
-         // cette ligne sera supprimée car on utilise saved maintenant
-        // Redirect to landing page which shows the success modal
-        Inscription saved = inscriptionService.save(inscription);
-        return "redirect:/confirmation/" + saved.getId();
+        inscriptionService.save(inscription);
+
+        // Redirect to landing page which shows the success modal (white/blue style)
+        return "redirect:/?success=1";
     }
 }
