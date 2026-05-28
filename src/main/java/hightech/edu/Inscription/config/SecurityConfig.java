@@ -13,13 +13,23 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 
+/**
+ * Configuration de sécurité Spring Security.
+ *
+ * ACCÈS ADMIN :
+ *   L'URL /login n'est PAS exposée sur la page publique (landing).
+ *   L'administrateur doit naviguer manuellement vers :
+ *     /portail-admin-ht2025
+ *   Cette URL redirige vers le formulaire de connexion.
+ *   Aucun lien vers cette URL n'est présent dans le HTML public.
+ *   Cela protège l'interface d'administration contre les bots et
+ *   les utilisateurs non informés.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // ─── URL secrète admin ─────────────────────────────────────────────────
-    // Seul chemin par lequel l'admin peut accéder au formulaire de connexion.
-    // /login direct retourne 404 (invisible pour les bots et visiteurs).
+    // Clé secrète de l'URL admin — à personnaliser avant déploiement
     public static final String ADMIN_ENTRY_PATH = "/portail-admin-ht2025";
 
     private final AdminUserService adminUserService;
@@ -44,67 +54,44 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .authenticationProvider(authProvider())
-
-                // ── CSRF : cookie-based, compatible Railway HTTPS ──────────────
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new XorCsrfTokenRequestAttributeHandler())
-                        .ignoringRequestMatchers(
-                                "/forgot-password",
-                                "/reset-password",
-                                "/s-inscrire",
-                                "/s-inscrire/**"
-                        )
+                        .ignoringRequestMatchers("/forgot-password", "/reset-password", "/s-inscrire", "/s-inscrire/**")
                 )
+            .authenticationProvider(authProvider())
+            .authorizeHttpRequests(auth -> auth
+                // ── Pages publiques ──────────────────────────────────────
+                .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/favicon.svg").permitAll()
 
-                // ── Autorisations ──────────────────────────────────────────────
-                .authorizeHttpRequests(auth -> auth
-                        // Pages publiques
-                        .requestMatchers(
-                                "/", "/css/**", "/js/**", "/images/**",
-                                "/favicon.ico", "/favicon.svg"
-                        ).permitAll()
+                // ── Formulaire d'inscription étudiant (public) ───────────
+                .requestMatchers("/s-inscrire", "/s-inscrire/**").permitAll()
 
-                        // Formulaire public d'inscription étudiant
-                        .requestMatchers("/s-inscrire", "/s-inscrire/**").permitAll()
+                // ── Accès admin via URL secrète ──────────────────────────
+                // L'admin tape /portail-admin-ht2025 dans le navigateur.
+                // Spring Security le redirige vers /login (formulaire caché).
+                // L'URL /login elle-même reste accessible pour traiter le POST.
+                .requestMatchers(ADMIN_ENTRY_PATH).permitAll()
+                .requestMatchers("/login", "/forgot-password", "/reset-password").permitAll()
 
-                        // URL secrète admin → accessible (redirige vers /login interne)
-                        .requestMatchers(ADMIN_ENTRY_PATH).permitAll()
-
-                        // Reset mot de passe (lien reçu par email)
-                        .requestMatchers("/forgot-password", "/reset-password").permitAll()
-
-                        // /login direct → BLOQUÉ (retourne 403/404 pour les visiteurs)
-                        // Spring Security gère /login en interne via loginPage() ci-dessous,
-                        // mais on NE le déclare PAS dans permitAll() → accès direct refusé.
-
-                        // Tout le reste nécessite une authentification
-                        .anyRequest().authenticated()
-                )
-
-                // ── Formulaire de connexion (géré en interne par Spring Security) ──
-                .formLogin(form -> form
-                                .loginPage("/login")              // Spring génère /login en interne
-                                .loginProcessingUrl("/login")     // POST traité par Spring Security
-                                .usernameParameter("email")
-                                .passwordParameter("password")
-                                .defaultSuccessUrl("/dashboard", true)
-                                .failureUrl("/login?error=true")
-                                .permitAll()                      // permitAll ici = Spring Security
-                        // autorise /login uniquement pour
-                        // les redirects internes. Un GET
-                        // direct depuis le navigateur sera
-                        // intercepté par LoginController
-                        // qui renvoie 404.
-                )
-
-                // ── Déconnexion ────────────────────────────────────────────────
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                        .permitAll()
-                );
+                // ── Toutes les autres routes nécessitent une authentification
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/dashboard", true)
+                .failureUrl("/login?error=true")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")  // Retour à la page publique après déconnexion
+                .permitAll()
+            );
 
         return http.build();
     }
