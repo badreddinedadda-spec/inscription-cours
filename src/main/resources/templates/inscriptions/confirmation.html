@@ -9,19 +9,19 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background: #F7F9FC; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
     .card { background: #fff; border-radius: 16px; padding: 3rem 2.5rem; max-width: 560px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
-    .ok-circle { width: 72px; height: 72px; border-radius: 50%; background: #DCFCE7; border: 3px solid #16A34A; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2rem; }
+    .ok-circle { width: 72px; height: 72px; border-radius: 50%; background: #DCFCE7; border: 3px solid #16A34A; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2rem; color: #16A34A; font-weight: 700; }
     h1 { font-family: 'Instrument Serif', serif; font-size: 1.8rem; color: #0F172A; margin-bottom: 0.5rem; }
-    .subtitle { color: #64748B; font-size: 0.9rem; margin-bottom: 2rem; }
+    .subtitle { color: #64748B; font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.6; }
     .info-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1.25rem 1.5rem; text-align: left; margin-bottom: 1.5rem; }
     .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #F1F5F9; font-size: 0.85rem; }
     .info-row:last-child { border-bottom: none; }
     .info-label { color: #64748B; font-weight: 500; }
-    .info-value { color: #0F172A; font-weight: 600; }
+    .info-value { color: #0F172A; font-weight: 600; text-align: right; max-width: 60%; }
     .badge { background: #FEF3C7; color: #92400E; padding: 0.2rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-    .dossier { background: #EEF3FF; border: 1px solid #C7D9F8; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1B3A6B; font-weight: 600; }
+    .dossier { background: #EEF3FF; border: 1px solid #C7D9F8; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: #1B3A6B; font-weight: 600; letter-spacing: 0.5px; }
     .btn-pdf { display: inline-flex; align-items: center; gap: 0.5rem; background: #1B3A6B; color: #fff; padding: 0.85rem 2rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; margin-bottom: 1rem; transition: background 0.15s; }
     .btn-pdf:hover { background: #142D56; }
-    .btn-home { display: inline-block; color: #64748B; font-size: 0.85rem; text-decoration: none; }
+    .btn-home { display: inline-block; color: #64748B; font-size: 0.85rem; text-decoration: none; margin-top: 0.5rem; }
     .btn-home:hover { color: #1B3A6B; }
     .note { font-size: 0.78rem; color: #94A3B8; margin-top: 1.5rem; line-height: 1.6; }
   </style>
@@ -30,10 +30,11 @@
 <div class="card">
   <div class="ok-circle">✓</div>
   <h1>Candidature envoyée !</h1>
-  <p class="subtitle">Votre dossier a été reçu. Notre équipe vous contactera sous <strong>48h</strong>.</p>
+  <p class="subtitle">Votre dossier a été reçu.<br>Notre équipe vous contactera sous <strong>48h</strong>.</p>
 
+  <!-- FIX: utiliser #strings.replace au lieu de padLeft qui n'existe pas en Thymeleaf -->
   <div class="dossier">
-    N° Dossier : HTEC-<span th:text="${#strings.toString(inscription.id).padLeft(4,'0')}">0001</span>
+    N° Dossier : HTEC-<span th:text="${#strings.replace(String.format('%04d', inscription.id), ' ', '0')}">0001</span>
   </div>
 
   <div class="info-box">
@@ -55,11 +56,11 @@
     </div>
     <div class="info-row">
       <span class="info-label">Date</span>
-      <span class="info-value" th:text="${inscription.dateInscription}">2025-01-01</span>
+      <span class="info-value" th:text="${#temporals.format(inscription.dateInscription, 'dd/MM/yyyy')}">01/01/2025</span>
     </div>
     <div class="info-row">
       <span class="info-label">Statut</span>
-      <span class="badge">En attente</span>
+      <span class="badge">En attente de validation</span>
     </div>
   </div>
 
