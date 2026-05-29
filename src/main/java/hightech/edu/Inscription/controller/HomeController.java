@@ -38,9 +38,12 @@ public class HomeController {
     /* ─── Landing (public) ─── */
     @GetMapping("/")
     public String landing(Model model) {
+        long inscriptionsValidees = inscriptionService.countByStatut(InscriptionStatut.VALIDE);
+        model.addAttribute("totalEtudiants",    inscriptionsValidees);
         model.addAttribute("totalEtudiants",   etudiantService.count());
         model.addAttribute("totalCours",       coursService.count());
         model.addAttribute("totalInscriptions",inscriptionService.count());
+        model.addAttribute("totalInscriptions",  inscriptionsValidees);
         model.addAttribute("coursList",        coursService.findAll());
         model.addAttribute("cms",              siteContentService.asMap());
         return "landing";
