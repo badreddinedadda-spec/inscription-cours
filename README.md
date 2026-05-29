@@ -22,7 +22,8 @@ Application web Spring Boot de gestion des inscriptions & courses.
 Interface d'administration sécurisée - accès restreint.
 
 ## Demo
-https://inscription-cours-production.up.railway.app
+https://inscription-cours-production-a068.up.railway.app
 
 ## Auteur
-Badr-Eddine DADDA && Khadija KHETTABI - HighTech EDU 2025–2026
+Encadré par : M.ENNAHBAOUI Mohamed
+Realise par : Badr-Eddine DADDA && Khadija KHETTABI - HighTech EDU 2025–2026
