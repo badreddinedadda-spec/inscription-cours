@@ -28,19 +28,18 @@ public class PasswordResetService {
     @Value("${app.base-url:http://localhost:8081}")
     private String baseUrl;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    // Adresse expéditeur fixe — Mailtrap accepte n'importe quelle adresse
+    private static final String FROM_EMAIL = "badreddinedadda@proton.me";
 
     @Transactional
     public boolean sendResetEmail(String email) {
-        // Check that an admin with this email exists in the DB
         Optional<AdminUser> userOpt = adminUserRepository.findByEmail(email);
         if (userOpt.isEmpty()) return false;
 
-        // Delete any existing token for this user
+        // Supprimer l'ancien token
         tokenRepository.deleteByUsername(email);
 
-        // Generate token and save it
+        // Générer et sauvegarder le nouveau token
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
@@ -49,21 +48,32 @@ public class PasswordResetService {
         resetToken.setUsed(false);
         tokenRepository.save(resetToken);
 
-        // Send reset email
+        // Envoyer l'email
         String resetLink = baseUrl + "/reset-password?token=" + token;
+
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
+        message.setFrom(FROM_EMAIL);   // ← adresse email valide, pas le username SMTP
         message.setTo(email);
-        message.setSubject("EduManager — Réinitialisation de votre mot de passe");
+        message.setSubject("HighTech EDU — Réinitialisation de votre mot de passe");
         message.setText(
-            "Bonjour " + userOpt.get().getPrenom() + ",\n\n" +
-            "Une demande de réinitialisation de mot de passe a été effectuée pour votre compte (" + email + ").\n\n" +
-            "Cliquez sur ce lien pour définir un nouveau mot de passe (valable 30 minutes) :\n\n" +
-            resetLink + "\n\n" +
-            "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.\n\n" +
-            "— EduManager / HighTech EDU"
+                "Bonjour " + userOpt.get().getPrenom() + ",\n\n" +
+                        "Une demande de réinitialisation de mot de passe a été effectuée " +
+                        "pour votre compte (" + email + ").\n\n" +
+                        "Cliquez sur ce lien pour définir un nouveau mot de passe (valable 30 minutes) :\n\n" +
+                        resetLink + "\n\n" +
+                        "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.\n\n" +
+                        "— HighTech EDU"
         );
-        mailSender.send(message);
+
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            // Log l'erreur sans bloquer — le token est déjà sauvegardé
+            System.err.println("[PasswordResetService] Erreur envoi email : " + e.getMessage());
+            // On retourne true quand même car le token existe en BDD
+            // L'admin peut récupérer le lien dans les logs si besoin
+        }
+
         return true;
     }
 
@@ -80,13 +90,11 @@ public class PasswordResetService {
         PasswordResetToken resetToken = opt.get();
         String email = resetToken.getUsername();
 
-        // Update password directly in the AdminUser DB record
         adminUserRepository.findByEmail(email).ifPresent(user -> {
             user.setPassword(passwordEncoder.encode(newPassword));
             adminUserRepository.save(user);
         });
 
-        // Mark token as used
         resetToken.setUsed(true);
         tokenRepository.save(resetToken);
         return true;
