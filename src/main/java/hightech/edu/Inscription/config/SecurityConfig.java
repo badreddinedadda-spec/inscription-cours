@@ -66,9 +66,7 @@ public class SecurityConfig {
                 .requestMatchers("/favicon.svg").permitAll()
 
                 // ── Formulaire d'inscription étudiant (public) ───────────
-                .requestMatchers("/s-inscrire", "/s-inscrire/**").permitAll()
-                .requestMatchers("/confirmation/**").permitAll()
-
+                .requestMatchers("/s-inscrire", "/s-inscrire/**", "/confirmation/**").permitAll()
                 // ── Accès admin via URL secrète ──────────────────────────
                 // L'admin tape /portail-admin-ht2025 dans le navigateur.
                 // Spring Security le redirige vers /login (formulaire caché).

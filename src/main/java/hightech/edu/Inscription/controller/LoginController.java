@@ -1,43 +1,51 @@
 package hightech.edu.Inscription.controller;
 
+import hightech.edu.Inscription.config.SecurityConfig;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * LoginController
- *
- * Gère deux routes :
- *
- *  1. GET /portail-admin-ht2025
- *     → URL secrète d'entrée pour l'administrateur.
- *        Non exposée sur la page publique (landing.html).
- *        Redirige vers /login (formulaire de connexion).
- *        Protection anti-bot : sans connaître cette URL,
- *        personne ne sait qu'un espace admin existe.
- *
- *  2. GET /login
- *     → Affiche le formulaire de connexion standard.
- *        Si l'utilisateur est déjà authentifié, il est
- *        redirigé vers /dashboard.
- */
 @Controller
 public class LoginController {
 
     /**
-     * URL secrète d'entrée admin.
-     * L'administrateur tape cette adresse directement dans son navigateur.
+     * URL secrète : /portail-admin-ht2025
+     * Seul vrai point d'entrée vers le login.
      */
-    @GetMapping("/portail-admin-ht2025")
-    public String adminEntryPoint() {
+    @GetMapping(SecurityConfig.ADMIN_ENTRY_PATH)
+    public String adminEntry() {
         return "redirect:/login";
     }
 
     /**
-     * Page de connexion standard (formulaire email + mot de passe).
-     * Spring Security intercepte le POST automatiquement.
+     * /login — si accès direct sans paramètre → renvoie à l'accueil.
+     * Seuls les redirects légitimes (error, logout, reset) affichent le formulaire.
      */
     @GetMapping("/login")
-    public String loginPage() {
+    public String login(
+            @RequestParam(required = false) String error,
+            @RequestParam(required = false) String logout,
+            @RequestParam(required = false) String reset,
+            HttpServletRequest request,
+            Model model) {
+
+        // Accès direct sans paramètre → cacher le login aux visiteurs
+        if (error == null && logout == null && reset == null) {
+            String referer = request.getHeader("Referer");
+            boolean fromSite = referer != null && referer.contains(
+                    request.getServerName()
+            );
+            if (!fromSite) {
+                return "redirect:/";
+            }
+        }
+
+        if (error  != null) model.addAttribute("error",  "Identifiants incorrects.");
+        if (logout != null) model.addAttribute("logout", "Vous avez été déconnecté.");
+        if (reset  != null) model.addAttribute("reset",  "Mot de passe réinitialisé.");
+
         return "login";
     }
 }
