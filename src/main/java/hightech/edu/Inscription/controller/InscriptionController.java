@@ -27,47 +27,49 @@ public class InscriptionController {
     private final EtudiantService etudiantService;
     private final CoursService coursService;
 
-    // ─── Admin : liste complète ────────────────────────────────────────────
+    // ─── Admin : liste complète ──────────────────────────────────────────
     @GetMapping("/inscriptions")
     public String liste(Model model) {
         model.addAttribute("inscriptions", inscriptionService.findAll());
-        model.addAttribute("enAttente",    inscriptionService.findByStatut(InscriptionStatut.EN_ATTENTE));
-        model.addAttribute("statuts",      InscriptionStatut.values());
+        model.addAttribute("enAttente", inscriptionService.findByStatut(InscriptionStatut.EN_ATTENTE));
+        model.addAttribute("statuts", InscriptionStatut.values());
         return "inscriptions/liste";
     }
 
-    // ─── Admin : demandes en attente ───────────────────────────────────────
+    // ─── Admin : demandes en attente ─────────────────────────────────────
     @GetMapping("/inscriptions/en-attente")
     public String enAttente(Model model) {
         model.addAttribute("inscriptions", inscriptionService.findByStatut(InscriptionStatut.EN_ATTENTE));
-        model.addAttribute("statuts",      InscriptionStatut.values());
-        model.addAttribute("filterLabel",  "Demandes en attente");
+        model.addAttribute("statuts", InscriptionStatut.values());
+        model.addAttribute("filterLabel", "Demandes en attente");
         return "inscriptions/liste";
     }
 
-    // ─── Admin : formulaire ────────────────────────────────────────────────
+    // ─── Admin : formulaire nouveau ──────────────────────────────────────
     @GetMapping("/inscriptions/nouveau")
     public String formulaireAjout(Model model, Authentication auth) {
         model.addAttribute("inscription", new Inscription());
-        model.addAttribute("etudiants",   etudiantService.findAll());
-        model.addAttribute("coursList",   coursService.findAll());
-        model.addAttribute("statuts",     InscriptionStatut.values());
-        model.addAttribute("adminUser",   adminUserService.findByEmail(auth != null ? auth.getName() : ""));
+        model.addAttribute("etudiants", etudiantService.findAll());
+        model.addAttribute("coursList", coursService.findAll());
+        model.addAttribute("statuts", InscriptionStatut.values());
+        model.addAttribute("adminUser", adminUserService.findByEmail(auth != null ? auth.getName() : ""));
         return "inscriptions/formulaire";
     }
 
+    // ─── Admin : formulaire modification ────────────────────────────────
     @GetMapping("/inscriptions/modifier/{id}")
     public String formulaireModification(@PathVariable Long id, Model model, Authentication auth) {
         Inscription inscription = inscriptionService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inscription introuvable : " + id));
         model.addAttribute("inscription", inscription);
-        model.addAttribute("etudiants",   etudiantService.findAll());
-        model.addAttribute("coursList",   coursService.findAll());
-        model.addAttribute("statuts",     InscriptionStatut.values());
-        model.addAttribute("adminUser",   adminUserService.findByEmail(auth != null ? auth.getName() : ""));
+        model.addAttribute("etudiants", etudiantService.findAll());
+        model.addAttribute("coursList", coursService.findAll());
+        model.addAttribute("statuts", InscriptionStatut.values());
+        model.addAttribute("adminUser", adminUserService.findByEmail(auth != null ? auth.getName() : ""));
         return "inscriptions/formulaire";
     }
 
+    // ─── Admin : sauvegarder ────────────────────────────────────────────
     @PostMapping("/inscriptions/sauvegarder")
     public String sauvegarder(
             @RequestParam Long etudiantId,
@@ -78,7 +80,7 @@ public class InscriptionController {
 
         boolean isNew = (inscriptionId == null);
         if (isNew && inscriptionService.existsByEtudiantIdAndCoursId(etudiantId, coursId)) {
-            redirectAttributes.addFlashAttribute("error", "⚠️ Cet étudiant est déjà inscrit à ce cours !");
+            redirectAttributes.addFlashAttribute("error", "Cet étudiant est déjà inscrit à ce cours !");
             return "redirect:/inscriptions/nouveau";
         }
 
@@ -96,6 +98,7 @@ public class InscriptionController {
         return "redirect:/inscriptions";
     }
 
+    // ─── Admin : supprimer ───────────────────────────────────────────────
     @GetMapping("/inscriptions/supprimer/{id}")
     public String supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         inscriptionService.deleteById(id);
@@ -103,55 +106,53 @@ public class InscriptionController {
         return "redirect:/inscriptions";
     }
 
+    // ─── Admin : valider ─────────────────────────────────────────────────
     @GetMapping("/inscriptions/valider/{id}")
     public String valider(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         inscriptionService.findById(id).ifPresent(insc -> {
             inscriptionService.valider(id);
             emailService.envoyerAcceptation(
-                insc.getEtudiant().getEmail(),
-                insc.getEtudiant().getPrenom(),
-                insc.getCours().getTitre()
+                    insc.getEtudiant().getEmail(),
+                    insc.getEtudiant().getPrenom(),
+                    insc.getCours().getTitre()
             );
         });
-        redirectAttributes.addFlashAttribute("success", "Inscription validée. Un email a été envoyé à l'étudiant.");
+        redirectAttributes.addFlashAttribute("success", "Inscription validée.");
         return "redirect:/inscriptions";
     }
 
+    // ─── Admin : annuler ─────────────────────────────────────────────────
     @GetMapping("/inscriptions/annuler/{id}")
     public String annuler(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         inscriptionService.findById(id).ifPresent(insc -> {
             inscriptionService.annuler(id);
             emailService.envoyerRefus(
-                insc.getEtudiant().getEmail(),
-                insc.getEtudiant().getPrenom(),
-                insc.getCours().getTitre()
+                    insc.getEtudiant().getEmail(),
+                    insc.getEtudiant().getPrenom(),
+                    insc.getCours().getTitre()
             );
         });
-        redirectAttributes.addFlashAttribute("success", "Inscription refusée. Un email a été envoyé à l'étudiant.");
+        redirectAttributes.addFlashAttribute("success", "Inscription refusée.");
         return "redirect:/inscriptions";
     }
 
-    // ─── PUBLIC : formulaire d'auto-inscription HighTech ──────────────────
+    // ─── PUBLIC : redirection depuis /s-inscrire GET ─────────────────────
     @GetMapping("/s-inscrire")
     public String publicForm() {
-        // Le formulaire d'inscription est intégré dans la landing page (modal).
-        // Cette URL redirige vers l'accueil pour éviter une page orpheline.
         return "redirect:/";
     }
 
+    // ─── PUBLIC : soumettre le formulaire ────────────────────────────────
     @PostMapping("/s-inscrire")
     public String publicSubmit(
-            // Identité
             @RequestParam(required = false) String civilite,
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) String prenom,
             @RequestParam(required = false) String email,
-            // Contact
             @RequestParam(required = false) String telephone,
             @RequestParam(required = false) String whatsapp,
             @RequestParam(required = false) String pays,
             @RequestParam(required = false) String ville,
-            // Inscription
             @RequestParam(required = false) Long coursId,
             @RequestParam(required = false) String souhaitInscription,
             @RequestParam(required = false) String ecole,
@@ -161,12 +162,12 @@ public class InscriptionController {
             @RequestParam(required = false) String message,
             RedirectAttributes redirectAttributes) {
 
-        // ── Validation basique ───────────────────────────────────────────────
+        // Validation basique
         if (nom == null || nom.isBlank() || prenom == null || prenom.isBlank()
                 || email == null || email.isBlank() || coursId == null) {
             redirectAttributes.addFlashAttribute("error",
                     "Veuillez remplir tous les champs obligatoires et sélectionner un programme.");
-            return "redirect:/s-inscrire";
+            return "redirect:/";
         }
 
         // Créer ou retrouver l'étudiant
@@ -183,11 +184,11 @@ public class InscriptionController {
             return etudiantService.save(e);
         });
 
-        // Mettre à jour les infos de contact si étudiant existant
+        // Mettre à jour les infos de contact
         if (telephone != null) etudiant.setTelephone(telephone);
-        if (whatsapp  != null) etudiant.setWhatsapp(whatsapp);
-        if (pays      != null) etudiant.setPays(pays);
-        if (ville     != null) etudiant.setVille(ville);
+        if (whatsapp != null) etudiant.setWhatsapp(whatsapp);
+        if (pays != null) etudiant.setPays(pays);
+        if (ville != null) etudiant.setVille(ville);
         etudiantService.save(etudiant);
 
         // Vérifier doublon
@@ -208,105 +209,89 @@ public class InscriptionController {
         inscription.setAnneeBac(anneeBac);
         inscription.setDoubleDiplomation(doubleDiplomation);
         inscription.setMessage(message);
-         // cette ligne sera supprimée car on utilise saved maintenant
-        // Redirect to landing page which shows the success modal
+
         Inscription saved = inscriptionService.save(inscription);
         return "redirect:/confirmation/" + saved.getId();
-        // ─── PUBLIC : page de confirmation après inscription ───────────────
-        @GetMapping("/confirmation/{id}")
-        public String confirmation(@PathVariable Long id, Model model) {
-            Inscription inscription = inscriptionService.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
-            model.addAttribute("inscription", inscription);
-            return "inscriptions/confirmation";
-        }
+    }
 
-// ─── PUBLIC : télécharger le reçu PDF ──────────────────────────────
-        @GetMapping("/confirmation/{id}/pdf")
-        public void telechargerPdf(@PathVariable Long id,
-                jakarta.servlet.http.HttpServletResponse response) throws Exception {
-            Inscription inscription = inscriptionService.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
+    // ─── PUBLIC : page de confirmation ───────────────────────────────────
+    @GetMapping("/confirmation/{id}")
+    public String confirmation(@PathVariable Long id, Model model) {
+        Inscription inscription = inscriptionService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
+        model.addAttribute("inscription", inscription);
+        return "inscriptions/confirmation";
+    }
 
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=recu-inscription-" + id + ".pdf");
+    @GetMapping("/confirmation/{id}/pdf")
+    public void telechargerPdf(@PathVariable Long id,
+                               jakarta.servlet.http.HttpServletResponse response) throws Exception {
 
-            // Génération PDF avec iText
-            com.itextpdf.kernel.pdf.PdfWriter writer =
-                    new com.itextpdf.kernel.pdf.PdfWriter(response.getOutputStream());
-            com.itextpdf.kernel.pdf.PdfDocument pdf =
-                    new com.itextpdf.kernel.pdf.PdfDocument(writer);
-            com.itextpdf.layout.Document document =
-                    new com.itextpdf.layout.Document(pdf);
+        Inscription inscription = inscriptionService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
 
-            // Titre
-            document.add(new com.itextpdf.layout.element.Paragraph("HIGHTECH EDU")
-                    .setFontSize(20).setBold()
-                    .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER));
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=recu-inscription-" + id + ".pdf");
 
-            document.add(new com.itextpdf.layout.element.Paragraph("Reçu de candidature")
-                    .setFontSize(14)
-                    .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER));
+        com.itextpdf.kernel.pdf.PdfWriter writer =
+                new com.itextpdf.kernel.pdf.PdfWriter(response.getOutputStream());
+        com.itextpdf.kernel.pdf.PdfDocument pdf =
+                new com.itextpdf.kernel.pdf.PdfDocument(writer);
+        com.itextpdf.layout.Document document =
+                new com.itextpdf.layout.Document(pdf);
 
-            document.add(new com.itextpdf.layout.element.Paragraph(" "));
+        // Fonts
+        com.itextpdf.kernel.font.PdfFont bold =
+                com.itextpdf.kernel.font.PdfFontFactory.createFont(
+                        com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
+        com.itextpdf.kernel.font.PdfFont normal =
+                com.itextpdf.kernel.font.PdfFontFactory.createFont(
+                        com.itextpdf.io.font.constants.StandardFonts.HELVETICA);
 
-            // Numéro dossier
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "N° Dossier : HTEC-" + String.format("%04d", id))
-                    .setFontSize(12).setBold());
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Date : " + inscription.getDateInscription())
-                    .setFontSize(11));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(" "));
-
-            // Infos étudiant
-            document.add(new com.itextpdf.layout.element.Paragraph("INFORMATIONS ÉTUDIANT")
-                    .setFontSize(12).setBold());
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Nom complet : " + inscription.getEtudiant().getPrenom()
-                            + " " + inscription.getEtudiant().getNom())
-                    .setFontSize(11));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Email : " + inscription.getEtudiant().getEmail())
-                    .setFontSize(11));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(" "));
-
-            // Infos cours
-            document.add(new com.itextpdf.layout.element.Paragraph("PROGRAMME CHOISI")
-                    .setFontSize(12).setBold());
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Cours : " + inscription.getCours().getTitre())
-                    .setFontSize(11));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Enseignant : " + inscription.getCours().getEnseignant())
-                    .setFontSize(11));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Durée : " + inscription.getCours().getDuree() + " heures")
-                    .setFontSize(11));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(" "));
-
-            // Statut
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Statut : EN ATTENTE DE VALIDATION")
-                    .setFontSize(12).setBold());
-
-            document.add(new com.itextpdf.layout.element.Paragraph(" "));
-
-            document.add(new com.itextpdf.layout.element.Paragraph(
-                    "Notre équipe vous contactera sous 48h.")
-                    .setFontSize(11));
-
-            document.close();
-        }
+        document.add(new com.itextpdf.layout.element.Paragraph("HIGHTECH EDU")
+                .setFont(bold).setFontSize(20)
+                .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER));
+        document.add(new com.itextpdf.layout.element.Paragraph("Recu de candidature")
+                .setFont(normal).setFontSize(14)
+                .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER));
+        document.add(new com.itextpdf.layout.element.Paragraph(" "));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "N Dossier : HTEC-" + String.format("%04d", id))
+                .setFont(bold).setFontSize(12));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Date : " + inscription.getDateInscription())
+                .setFont(normal).setFontSize(11));
+        document.add(new com.itextpdf.layout.element.Paragraph(" "));
+        document.add(new com.itextpdf.layout.element.Paragraph("INFORMATIONS ETUDIANT")
+                .setFont(bold).setFontSize(12));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Nom complet : " + inscription.getEtudiant().getPrenom()
+                        + " " + inscription.getEtudiant().getNom())
+                .setFont(normal).setFontSize(11));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Email : " + inscription.getEtudiant().getEmail())
+                .setFont(normal).setFontSize(11));
+        document.add(new com.itextpdf.layout.element.Paragraph(" "));
+        document.add(new com.itextpdf.layout.element.Paragraph("PROGRAMME CHOISI")
+                .setFont(bold).setFontSize(12));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Cours : " + inscription.getCours().getTitre())
+                .setFont(normal).setFontSize(11));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Enseignant : " + inscription.getCours().getEnseignant())
+                .setFont(normal).setFontSize(11));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Duree : " + inscription.getCours().getDuree() + " heures")
+                .setFont(normal).setFontSize(11));
+        document.add(new com.itextpdf.layout.element.Paragraph(" "));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Statut : EN ATTENTE DE VALIDATION")
+                .setFont(bold).setFontSize(12));
+        document.add(new com.itextpdf.layout.element.Paragraph(" "));
+        document.add(new com.itextpdf.layout.element.Paragraph(
+                "Notre equipe vous contactera sous 48h.")
+                .setFont(normal).setFontSize(11));
+        document.close();
     }
 }
