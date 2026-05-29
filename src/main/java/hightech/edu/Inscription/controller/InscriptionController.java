@@ -220,6 +220,7 @@ public class InscriptionController {
         Inscription inscription = inscriptionService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inscription introuvable"));
         model.addAttribute("inscription", inscription);
+        model.addAttribute("numeroDossier", String.format("HTEC-%04d", id));
         return "inscriptions/confirmation";
     }
 
