@@ -1,63 +1,64 @@
 package hightech.edu.Inscription.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    @Value("${mailtrap.api.token}")
+    private String mailtrapToken;
 
-    /**
-     * Envoie un email d'acceptation à l'étudiant.
-     */
-    public void envoyerAcceptation(String emailEtudiant, String prenomEtudiant, String titreCours) {
+    private void sendViaApi(String toEmail, String subject, String text) {
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(emailEtudiant);
-            msg.setSubject("Votre inscription est validée — HighTech EDU");
-            msg.setText(
-                "Bonjour " + prenomEtudiant + ",\n\n" +
-                "Nous avons le plaisir de vous informer que votre inscription au cours :\n\n" +
-                "   « " + titreCours + " »\n\n" +
-                "a été validée par notre équipe pédagogique.\n\n" +
-                "Bienvenue chez HighTech EDU ! Vous recevrez prochainement les détails " +
-                "concernant le démarrage du cours.\n\n" +
-                "Cordialement,\n" +
-                "L'équipe HighTech EDU"
-            );
-            mailSender.send(msg);
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Api-Token", mailtrapToken);
+
+            String body = """
+                {
+                  "from": {"email": "noreply@hightech.edu", "name": "HighTech EDU"},
+                  "to": [{"email": "%s"}],
+                  "subject": "%s",
+                  "text": "%s"
+                }
+                """.formatted(toEmail, subject, text.replace("\n", "\\n").replace("\"", "\\\""));
+
+            HttpEntity<String> request = new HttpEntity<>(body, headers);
+            restTemplate.postForEntity("https://send.api.mailtrap.io/api/send", request, String.class);
+            System.out.println("[EmailService] Email envoyé à " + toEmail);
+
         } catch (Exception e) {
-            // Email non bloquant : si SMTP non configuré, on log simplement
-            System.err.println("[EmailService] Impossible d'envoyer l'email d'acceptation à "
-                + emailEtudiant + " : " + e.getMessage());
+            System.err.println("[EmailService] Erreur envoi email à " + toEmail + " : " + e.getMessage());
         }
     }
 
-    /**
-     * Envoie un email de refus à l'étudiant.
-     */
-    public void envoyerRefus(String emailEtudiant, String prenomEtudiant, String titreCours) {
-        try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(emailEtudiant);
-            msg.setSubject("Suite à votre candidature — HighTech EDU");
-            msg.setText(
+    public void envoyerAcceptation(String emailEtudiant, String prenomEtudiant, String titreCours) {
+        sendViaApi(
+                emailEtudiant,
+                "Votre inscription est validée — HighTech EDU",
                 "Bonjour " + prenomEtudiant + ",\n\n" +
-                "Après examen de votre dossier, nous ne sommes malheureusement pas en mesure " +
-                "de donner une suite favorable à votre candidature pour le cours :\n\n" +
-                "   « " + titreCours + " »\n\n" +
-                "Nous vous encourageons à vous présenter à la prochaine session d'admissions.\n\n" +
-                "Cordialement,\n" +
-                "L'équipe HighTech EDU"
-            );
-            mailSender.send(msg);
-        } catch (Exception e) {
-            System.err.println("[EmailService] Impossible d'envoyer l'email de refus à "
-                + emailEtudiant + " : " + e.getMessage());
-        }
+                        "Nous avons le plaisir de vous informer que votre inscription au cours :\n\n" +
+                        "« " + titreCours + " »\n\n" +
+                        "a été validée par notre équipe pédagogique.\n\n" +
+                        "Bienvenue chez HighTech EDU !\n\n" +
+                        "Cordialement,\nL'équipe HighTech EDU"
+        );
+    }
+
+    public void envoyerRefus(String emailEtudiant, String prenomEtudiant, String titreCours) {
+        sendViaApi(
+                emailEtudiant,
+                "Suite à votre candidature — HighTech EDU",
+                "Bonjour " + prenomEtudiant + ",\n\n" +
+                        "Après examen de votre dossier, nous ne sommes malheureusement pas en mesure " +
+                        "de donner une suite favorable à votre candidature pour le cours :\n\n" +
+                        "« " + titreCours + " »\n\n" +
+                        "Nous vous encourageons à vous présenter à la prochaine session.\n\n" +
+                        "Cordialement,\nL'équipe HighTech EDU"
+        );
     }
 }
