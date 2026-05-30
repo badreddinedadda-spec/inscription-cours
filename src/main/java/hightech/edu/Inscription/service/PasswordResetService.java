@@ -30,15 +30,16 @@ public class PasswordResetService {
     @Value("${mailtrap.api.token}")
     private String mailtrapToken;
 
+    @Value("${mailtrap.inbox.id:4675903}")
+    private String inboxId;
+
     @Transactional
     public boolean sendResetEmail(String email) {
         Optional<AdminUser> userOpt = adminUserRepository.findByEmail(email);
         if (userOpt.isEmpty()) return false;
 
-        // Supprimer l'ancien token
         tokenRepository.deleteByUsername(email);
 
-        // Générer et sauvegarder le nouveau token
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
@@ -47,7 +48,6 @@ public class PasswordResetService {
         resetToken.setUsed(false);
         tokenRepository.save(resetToken);
 
-        // Envoyer via Mailtrap API (HTTP) — pas de port SMTP bloqué
         String resetLink = baseUrl + "/reset-password?token=" + token;
         sendViaMailtrapApi(email, userOpt.get().getPrenom(), resetLink);
 
@@ -62,24 +62,24 @@ public class PasswordResetService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Api-Token", mailtrapToken);
 
-            String body = """
+            String body = String.format("""
                 {
                   "from": {"email": "noreply@hightech.edu", "name": "HighTech EDU"},
                   "to": [{"email": "%s"}],
-                  "subject": "HighTech EDU — Réinitialisation de votre mot de passe",
-                  "text": "Bonjour %s,\\n\\nCliquez sur ce lien pour réinitialiser votre mot de passe (valable 30 minutes) :\\n\\n%s\\n\\n— HighTech EDU"
+                  "subject": "HighTech EDU - Reinitialisation de votre mot de passe",
+                  "text": "Bonjour %s,\\n\\nCliquez sur ce lien pour reinitialiser votre mot de passe (valable 30 minutes) :\\n\\n%s\\n\\n- HighTech EDU"
                 }
-                """.formatted(toEmail, prenom, resetLink);
+                """, toEmail, prenom, resetLink);
 
             HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    "https://send.api.mailtrap.io/api/send",
-                    request,
-                    String.class
-            );
+            // ── Sandbox endpoint ──────────────────────────────────────────
+            String url = "https://sandbox.api.mailtrap.io/api/send/" + inboxId;
 
-            System.out.println("[PasswordResetService] Email envoyé via API : " + response.getStatusCode());
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    url, request, String.class);
+
+            System.out.println("[PasswordResetService] Email envoye : " + response.getStatusCode());
 
         } catch (Exception e) {
             System.err.println("[PasswordResetService] Erreur API Mailtrap : " + e.getMessage());
