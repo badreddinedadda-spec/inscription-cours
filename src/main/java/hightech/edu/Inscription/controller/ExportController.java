@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -75,10 +76,9 @@ public class ExportController {
                 ? etudiantService.findAll()
                 : etudiantService.findPaginated(search, 0, Integer.MAX_VALUE).getContent();
 
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=etudiants.xlsx");
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-        try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("Étudiants");
 
             CellStyle headerStyle = wb.createCellStyle();
@@ -107,11 +107,18 @@ public class ExportController {
                         e.getDateNaissance() != null ? e.getDateNaissance().toString() : "");
             }
             for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
-            wb.write(response.getOutputStream());
+
+            wb.write(baos); // ← write to buffer, not directly to response
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=etudiants.xlsx");
+            response.setContentLength(baos.size());
+            baos.writeTo(response.getOutputStream());
+            response.getOutputStream().flush();
         }
     }
 
-    // ── ÉTUDIANTS — PDF ───────────────────────────────────────────────
+    //éTUDIANTS
 
     @GetMapping("/etudiants/pdf")
     public void exportEtudiantsPdf(
@@ -153,7 +160,7 @@ public class ExportController {
         doc.close();
     }
 
-    // ── COURS — Excel ─────────────────────────────────────────────────
+    // ── COURS — Excel
 
     @GetMapping("/cours/excel")
     public void exportCoursExcel(
@@ -164,10 +171,9 @@ public class ExportController {
                 ? coursService.findAll()
                 : coursService.findPaginated(search, 0, Integer.MAX_VALUE).getContent();
 
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=cours.xlsx");
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-        try (Workbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("Cours");
 
             CellStyle headerStyle = wb.createCellStyle();
@@ -196,11 +202,18 @@ public class ExportController {
                         c.getDescription() != null ? c.getDescription() : "");
             }
             for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
-            wb.write(response.getOutputStream());
+
+            wb.write(baos); // ← write to buffer, not directly to response
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=cours.xlsx");
+            response.setContentLength(baos.size());
+            baos.writeTo(response.getOutputStream());
+            response.getOutputStream().flush();
         }
     }
 
-    // ── COURS — PDF ───────────────────────────────────────────────────
+    //COURS
 
     @GetMapping("/cours/pdf")
     public void exportCoursPdf(
