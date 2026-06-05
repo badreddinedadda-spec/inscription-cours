@@ -44,7 +44,7 @@ public class ExportController {
     private final EtudiantService etudiantService;
     private final CoursService coursService;
 
-    // ── Helpers ───────────────────────────────────────────────────────
+    //Helpers
 
     private PdfFont boldFont() throws IOException {
         return PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
@@ -64,7 +64,7 @@ public class ExportController {
         return new Cell().add(new Paragraph(text).setFont(font));
     }
 
-    // ── ÉTUDIANTS — Excel ─────────────────────────────────────────────
+    //_éTUDIANTS_Excel
 
     @GetMapping("/etudiants/excel")
     public void exportEtudiantsExcel(
@@ -106,12 +106,13 @@ public class ExportController {
                 row.createCell(4).setCellValue(
                         e.getDateNaissance() != null ? e.getDateNaissance().toString() : "");
             }
-            for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
+            int[] widths = {2000, 6000, 6000, 8000, 4000};
+            for (int i = 0; i < headers.length; i++) sheet.setColumnWidth(i, widths[i]);
             wb.write(response.getOutputStream());
         }
     }
 
-    // ── ÉTUDIANTS — PDF ───────────────────────────────────────────────
+    //ÉTUDIANTS_PDF
 
     @GetMapping("/etudiants/pdf")
     public void exportEtudiantsPdf(
@@ -153,7 +154,7 @@ public class ExportController {
         doc.close();
     }
 
-    // ── COURS — Excel ─────────────────────────────────────────────────
+    //_COURS_Excel
 
     @GetMapping("/cours/excel")
     public void exportCoursExcel(
@@ -195,12 +196,13 @@ public class ExportController {
                 row.createCell(4).setCellValue(
                         c.getDescription() != null ? c.getDescription() : "");
             }
-            for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
+            int[] widths = {2000, 6000, 6000, 8000, 4000};
+            for (int i = 0; i < headers.length; i++) sheet.setColumnWidth(i, widths[i]);
             wb.write(response.getOutputStream());
         }
     }
 
-    // ── COURS — PDF ───────────────────────────────────────────────────
+    //COURS_PDF
 
     @GetMapping("/cours/pdf")
     public void exportCoursPdf(

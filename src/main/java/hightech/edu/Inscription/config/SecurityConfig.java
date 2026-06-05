@@ -13,23 +13,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 
-/**
- * Configuration de sécurité Spring Security.
- *
- * ACCÈS ADMIN :
- *   L'URL /login n'est PAS exposée sur la page publique (landing).
- *   L'administrateur doit naviguer manuellement vers :
- *     /portail-admin-ht2025
- *   Cette URL redirige vers le formulaire de connexion.
- *   Aucun lien vers cette URL n'est présent dans le HTML public.
- *   Cela protège l'interface d'administration contre les bots et
- *   les utilisateurs non informés.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Clé secrète de l'URL admin — à personnaliser avant déploiement
+    // Clé secrète de l'URL admin à personnaliser avant déploiement
     public static final String ADMIN_ENTRY_PATH = "/portail-admin-ht2025";
 
     private final AdminUserService adminUserService;
@@ -61,20 +49,20 @@ public class SecurityConfig {
                 )
             .authenticationProvider(authProvider())
             .authorizeHttpRequests(auth -> auth
-                // ── Pages publiques ──────────────────────────────────────
+                //Pages publiques
                 .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/favicon.svg").permitAll()
 
-                // ── Formulaire d'inscription étudiant (public) ───────────
+                //Formulaire d'inscription étudiant (public) ───────────
                 .requestMatchers("/s-inscrire", "/s-inscrire/**", "/confirmation/**").permitAll()
-                // ── Accès admin via URL secrète ──────────────────────────
-                // L'admin tape /portail-admin-ht2025 dans le navigateur.
-                // Spring Security le redirige vers /login (formulaire caché).
-                // L'URL /login elle-même reste accessible pour traiter le POST.
+                //Accès admin via URL secrète ──────────────────────────
+                //L'admin tape /portail-admin-ht2025 dans le navigateur.
+                //Spring Security le redirige vers /login (formulaire caché).
+                //L'URL /login elle-même reste accessible pour traiter le POST.
                 .requestMatchers(ADMIN_ENTRY_PATH).permitAll()
                 .requestMatchers("/login", "/forgot-password", "/reset-password").permitAll()
 
-                // ── Toutes les autres routes nécessitent une authentification
+                //Toutes les autres routes necessitent une authentification
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
