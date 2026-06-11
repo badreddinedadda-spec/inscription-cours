@@ -45,16 +45,10 @@ public class SecurityConfig {
                 )
             .authenticationProvider(authProvider())
             .authorizeHttpRequests(auth -> auth
-                //Pages publiques
                 .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/favicon.svg").permitAll()
-
-                //Formulaire d'inscription étudiant (public) ───────────
                 .requestMatchers("/s-inscrire", "/s-inscrire/**", "/confirmation/**").permitAll()
-                //Accès admin via URL secrète ──────────────────────────
-                //L'admin tape /portail-admin-ht2025 dans le navigateur.
-                //Spring Security le redirige vers /login (formulaire caché).
-                //L'URL /login elle-même reste accessible pour traiter le POST.
+
                 .requestMatchers(ADMIN_ENTRY_PATH).permitAll()
                 .requestMatchers("/login", "/forgot-password", "/reset-password").permitAll()
 
@@ -72,7 +66,7 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/")  // Retour à la page publique après déconnexion
+                .logoutSuccessUrl("/")
                 .permitAll()
             );
 
