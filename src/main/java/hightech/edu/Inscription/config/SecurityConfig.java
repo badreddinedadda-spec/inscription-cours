@@ -41,7 +41,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/forgot-password", "/reset-password", "/s-inscrire", "/s-inscrire/**")
+                        .ignoringRequestMatchers("/","/forgot-password", "/reset-password", "/s-inscrire", "/s-inscrire/**")
                 )
             .authenticationProvider(authProvider())
             .authorizeHttpRequests(auth -> auth
